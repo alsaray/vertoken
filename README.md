@@ -10,10 +10,9 @@
 💢¦ v3 تنصيب سورس فير توكن  💯
 <br>💢¦ اهم شي بالبدايه تسوي ريدز ضروري
 <br>💢¦ لان اذا مسويته رح تصير اخطاء عندك
-<br>     `redis-server`
+<br><br>     `redis-server`<br>
 <br>💢¦ افتح ترمنال جديد وخلي 
-
-
+<br>
 
 `git clone https://github.com/alsaray/vertoken.git && cd vertoken && chmod +x launch.sh && ./launch.sh install && ./launch.sh`
 
