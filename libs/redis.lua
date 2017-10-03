@@ -18,20 +18,19 @@ Redis.commands.hgetall = Redis.command('hgetall', {
 local redis = nil
 
 -- Won't launch an error if fails
-local ok = pcall(function()
+local okxw = pcall(function()
   redis = Redis.connect(params)
 end)
-
-if not ok then
-
-  local fake_func = function()
-    print('\27[31mCan\'t connect with Redis, install/configure it!\27[39m')
-  end
+notredis=false
+if not okxw then
+local fake_func = function()
+  notredis =true
+end
   fake_func()
   fake = FakeRedis.new()
 
-  print('\27[31mRedis addr: '..params.host..'\27[39m')
-  print('\27[31mRedis port: '..params.port..'\27[39m')
+ -- print('\27[31mRedis addr: '..params.host..'\27[39m')
+ -- print('\27[31mRedis port: '..params.port..'\27[39m')
 
   redis = setmetatable({fakeredis=true}, {
   __index = function(a, b)
@@ -42,6 +41,5 @@ if not ok then
   end })
 
 end
-
 
 return redis

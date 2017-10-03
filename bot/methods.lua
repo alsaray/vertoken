@@ -5,17 +5,7 @@ by omar alsaray @blcon  \ @verxbot
 تم تعريب االترمنال من قبل عمر السراي
 ]]
 
-function getUser(user_id)
-local url = http.request('https://www.api.beyond-dev.ir/getUser?token='..token_botx..'&user_id='..user_id)
-local user = JSON.decode(url)
-return user
-end
 
-function resolve_username(username)
-local url = http.request('https://www.api.beyond-dev.ir/getUser?token='..token_botx..'&username='..username)
-local user = JSON.decode(url)
-return user
-end
 
 function send_msg(chat_id, text, reply_to_message_id, markdown)
 
@@ -35,7 +25,7 @@ function send_msg(chat_id, text, reply_to_message_id, markdown)
 
 end
 
- function edit(chat_id, message_id, text, keyboard, markdown)
+function edit(chat_id, message_id, text, keyboard, markdown)
 	
 	local url = send_api .. '/editMessageText?chat_id=' .. chat_id .. '&message_id='..message_id..'&text=' .. URL.escape(text)
 	
@@ -52,6 +42,7 @@ end
 	return send_req(url)
 
 end
+
 function send(chat_id, text, keyboard, markdown)
 	
 	local url = send_api.. '/sendMessage?chat_id=' .. chat_id
@@ -67,6 +58,7 @@ function send(chat_id, text, keyboard, markdown)
 	return send_req(url)
 
 end
+
 function send_document(chat_id, name)
 	local send = send_api.."/sendDocument"
 	local curl_command = 'curl -s "'..send..'" -F "chat_id='..chat_id..'" -F "document=@'..name..'"'

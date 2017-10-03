@@ -9,7 +9,6 @@ by omar alsaray @blcon  \ @verxbot
 do 
 local function run(msg, matches) 
 
-if is_silent_user(msg.from.id, msg.to.id) then return end
 
 local w = matches[1]
 local ww = matches[2]
@@ -22,6 +21,56 @@ usernamex = "@"..(msg.from.username or "---")
 else
 usernamex = "️ ما مسوي  😹💔 "
 end
+
+if matches[1] == botname..' غادر' and is_sudo(msg) and msg.to.type == "supergroup" or msg.to.type == "group" then
+send_msg(msg.to.id,"💢¦ تم حذف بيانات المجموعة \n💢¦  سوف اغادر باي 👋🏿" )
+botrem(msg)
+end
+--------------------[Test Bot]----------------------------
+if w =="تيست" then
+return "💯 البوت شـغــال 🚀"
+elseif w == "اسمي" then
+return  "\n" ..msg.from.first_name.."\n" 
+elseif w == "معرفي" then
+return  usernamex
+elseif w == "رقمي" then
+return  "\n"..(msg.from.phone or "لايوجد").."\n" 
+elseif w == "ايديي" then
+return  "\n"..msg.from.id.."\n" 
+elseif w =="صورتي" then
+local status = getUserProfilePhotos(msg.from.id, 0, 0)
+if status.result.total_count ~= 0 then
+	sendPhotoById(msg.to.id, status.result.photos[1][1].file_id, msg.id, '')
+else
+return '💢¦لا توجد صورة في بروفايلك !!! '
+end
+elseif w=="اريد رابط الحذف" or w=="اريد رابط حذف" or w=="رابط حذف" or w=="رابط الحذف" then
+return [[
+💢¦ رابط حذف حـساب التيليگرام ↯
+💢¦ لتتندم فڪر قبل ڪلشي ❤️
+💢¦ بالتـوفيـق عزيزي ...
+
+💢¦ـ  https://telegram.org/deactivate
+]]  
+elseif w== 'ايدي' and msg.to.type == 'private' then
+local iid = "💢¦ ايدي البوت :` "..our_id.. "`\n💢¦ ايدي حسابك :` "..msg.from.id.. "`\n💢¦ قناة الـسـورس : @verxbot\n💢¦ مطور الـسـورس :\n💢¦ عمر الــســراي  > @blcon\n 💯"
+send_msg(msg.from.id, iid,nil,'md')
+
+end
+------------[lock and unlock reply in pv ]---------
+    
+if(msg.to.type == "private") then
+if w and msg.reply_to_message and msg.reply.fwd_from and is_sudo(msg) then
+send_msg(msg.reply.fwd_from.id,w)
+send_msg(msg.from.id,'💬| تم ارسال رسالتك ✔️ ')
+
+elseif not is_sudo(msg) and msg.from.id ~= our_id and w~="/start"  then
+fwd_msg(sudo_id,msg.from.id,msg.id)
+send_msg(msg.from.id,'💢¦ تم ارسال رسالتك ✔️ \n💢¦ سوف يرد عليك المطور في اقرب وقت 🔜\n',msg.id)
+end
+end
+    
+if not (data[tostring(msg.to.id)] or is_silent_user(msg.from.id, msg.to.id)) then return end
 
 --------------[data function to save rdod ]---------------
 if data[tostring(msg.to.id)] then
@@ -71,7 +120,7 @@ else
 local i = 1
 local message = '💢 ردود البوت في المجموعه  💯\n\n'
 for k,v in pairs(data[tostring(msg.to.id)]['replay']) do
-message = message ..i..' - '..k..' [' ..v.. '] \n'
+message = message ..i..' - '..k..' [[' ..v.. ']] \n'
 i = i + 1
 end
 return message
@@ -82,72 +131,17 @@ end
 -- by @alsaray
 
 
---------------------[Test Bot]----------------------------
-if w =="تيست" then
-return "💯 البوت شـغــال 🚀"
-elseif w == "اسمي" then
-return  "\n" ..msg.from.first_name.."\n" 
-elseif w == "معرفي" then
-return  "@"..(msg.from.username or "لايوجد").."\n" 
-elseif w == "رقمي" then
-return  "\n"..(msg.from.phone or "لايوجد").."\n" 
-elseif w == "ايديي" then
-return  "\n"..msg.from.id.."\n" 
-elseif w =="صورتي" then
-local status = getUserProfilePhotos(msg.from.id, 0, 0)
-if status.result.total_count ~= 0 then
-	sendPhotoById(msg.to.id, status.result.photos[1][1].file_id, msg.id, '')
-else
-return '💢¦لا توجد صورة في بروفايلك !!! '
-end
-elseif w=="اريد رابط الحذف" or w=="اريد رابط حذف" or w=="رابط حذف" or w=="رابط الحذف" then
-return [[
-💢¦ رابط حذف حـساب التيليگرام ↯
-💢¦ فڪر قبل ڪلشي ❤️
-💢¦ بالتـوفيـق عزيزي ...
 
-💢¦ـ  https://telegram.org/deactivate
-]]  
-elseif w== 'ايدي' and msg.to.type == 'private' then
-local iid = "💢¦ ايدي البوت :` "..our_id.. "`\n💢¦ ايدي حسابك :` "..msg.from.id.. "`\n💢¦ قناة الـسـورس : @verxbot\n💢¦ مطور الـسـورس :\n💢¦ عمر الــســراي  > @blcon\n 💯"
-send_msg(msg.from.id, iid,nil,'md')
-elseif w=="رتبتي" then
- local rank
-if is_sudo(msg) then
-rank = 'المطور مالتي 😻'
-elseif is_owner(msg) and msg.to.type ~= 'private'  then
-rank = 'مدير المجموعه 😽'
-elseif is_mod(msg) and msg.to.type ~= 'private'  then
-rank = ' ادمن في البوت 😺'
-else
-if msg.to.type ~= 'private' then
-rank = 'مجرد عضو 😹'
-else
-rank = '💢¦ لست مطور في السورس'
-end
-end
-return '💢¦ رتبتك : '..rank
-end
-------------[lock and unlock reply in pv ]---------
-    
-if (msg.to.type == "private") and not is_sudo(msg) and msg.from.id ~= our_id  then
-send_msg(msg.to.id, "💢¦ انت تراسل بوت حمايه \n💢¦ راسل المطور ستجد معرفه في البايو ",nil, 'html')
-local pvmsg ="💢¦ ألاسم :"..name_user.."\n💢¦ الايدي : ["..msg.from.id.."]\n💢¦ ألمعرف : ["..usernamex.."]\n 🗯¦ الرسالة: \n\n"..msg.text
-
-send_msg(sudo_id, pvmsg, nil, 'md')
-
-end
-    
 --------------------------------------
 
 if lock_reply =="yes" and  data[tostring(msg.to.id)] then
 
 if  msg.to.type == "supergroup" or msg.to.type == "group" then
-    ----------------------
-    -- by @alsaray
+----------------------
+-- by @alsaray
 local su = {
 "نعم حبيبي المطور 🌝❤",
-"يابعد روح فير 😘❤️",
+"يابعد روح "..botname.." 😘❤️",
 "هلا بمطوري العشق أمرني"
   }
 local  ss97 = {
@@ -163,17 +157,17 @@ local  ss97 = {
 "احجي بسرعه شتريد 😤",
 "ها يا كلبي ❤️",
 "هم صاحو عليه راح ابدل اسمي من وراكم 😡",
-"لك فداك فير حبيبي انت اموووح 💋",
+"لك فداك "..botname.." حبيبي انت اموووح 💋",
 "دا اشرب جاي تعال غير وكت 😌",
 "كول حبيبي أمرني 😍",
 "احجي فضني شرايد ولا اصير ضريف ودكلي جرايد لو مجلات تره بايخه 😒😏",
-"اشتعلو اهل فير شتريد 😠",
+"اشتعلو اهل "..botname.." شتريد 😠",
 "بووووووووو 👻 ها ها فزيت شفتك شفتك لا تحلف 😂",
 "طالع مموجود 😒",
 "هااا شنوو اكو حاته بالكروب وصحت عليه  😍💕",
 "انت مو قبل يومين غلطت عليه؟  😒",
-"راجع المكتب حبيبي عبالك فير سهل تحجي ويا 😒",
-"ياعيون فير أمرني 😍",
+"راجع المكتب حبيبي عبالك "..botname.." سهل تحجي ويا 😒",
+"ياعيون "..botname.." أمرني 😍",
 "لك دبدل ملابسي اطلع برااااا 😵😡 ناس متستحي",
 "سويت هواي شغلات سخيفه بحياتي بس عمري مصحت على واحد وكلتله انجب 😑",
 "مشغول ويا ضلعتي  ☺️",
@@ -225,52 +219,33 @@ local song = {
  
  
 }
--------reply By stickers -------
-
-local function sudoname(ww)
-if string.match(ww, 'عمر')  or  string.match(ww, 'عموش') or  string.match(ww, 'عموري') or  string.match(ww, 'عمور')  or string.match(ww, 'عمروش') then
-return true
-else
-return false
-end
-end
 
 ----------------------------------------------
-if is_sudo(msg) and w == "فير" and not ww then 
+if is_sudo(msg) and w == botname and not ww then 
 return  su[math.random(#su)]  
-elseif not is_sudo(msg) and w == "فير" and not ww then 
+elseif not is_sudo(msg) and w == botname and not ww then 
 return  ss97[math.random(#ss97)]  
 elseif w == "كول" and ww then
 if string.len(ww) > 60 then return "💢¦ ما اكدر اكول اكثر من 60 حرف 🙌🏾" end
-if sudoname(ww) then return "📌 ما اكدر احجي عليه مستحيل 🕵🏻" end
  send_msg(msg.to.id, '<code>'..ww..'</code>', nil, 'html')
 elseif w == "كله" and ww then
 if string.len(ww) > 60 then return "💢¦ ما اكدر اكله اكثر من 60 حرف 🙌🏾" end
-if sudoname(ww) then return "📌 ما اكدر احجي عليه مستحيل 🕵🏻" end
 if msg.reply_id then
  send_msg(msg.to.id, '<code>'..ww..'</code>',msg.reply_id, 'html')
 end
-elseif w == "فير رزله" and ww and is_sudo(msg) then
+elseif w== botname and ww == "رزله" and r3 and is_sudo(msg) then
 if msg.reply_id then
 send_msg(msg.to.id, 'اوك سيدي 🌝🍃', msg.id, 'html')
 send_msg(msg.to.id, 'يا ول شو طالعة عينك😒 من البنات مو😪و هم صايرلك لسان تحجي😠اشو تعال👋👊صير حباب مرة ثانية ترةة ...😉و لا تخليني البسك عمامة و اتفل عليك😂️',msg.reply_id, 'html')
 end
 elseif w == "بوس" and ww then 
-if sudoname(ww) then
-return " امممح عـﮩـموري™ هذا العشق😻💋"
-else
 if msg.reply_id then
-return  bs[math.random(#bs)] 
+send_msg(msg.to.id, bs[math.random(#bs)] , msg.reply_id ,'html')  
 else
-send_msg(msg.to.id, "📌 وينه بله سويله رد 🕵🏻", msg.reply_id ,'html')
-end
+send_msg(msg.to.id, "📌 وينه بله سويله رد 🕵🏻", nil ,'html')
 end
 elseif w == "تحب" and ww then
-if sudoname(ww) then
-return "اموت عليةة عـﮩـموري™ هذا العشق😻💋"
-else
 return  thb[math.random(#thb)] 
-end
 elseif is_sudo(msg) and w =="هلو" then
 return  sh[math.random(#sh)]  
 elseif not is_sudo(msg) and w =="هلو" then
@@ -283,8 +258,6 @@ elseif not is_sudo(msg) and w == "احبك" or w=="حبك" then
 return  lovm[math.random(#lovm)]  
 elseif not is_sudo(msg) and w == "تحبني" then
 return  lovm[math.random(#lovm)]  
-elseif w== "ڤير"  then
-return  ss97[math.random(#ss97)]  
 elseif w== "غني" or w=="غنيلي" then
 return  song[math.random(#song)] 
 elseif w=="اتفل" or w=="تفل" then
@@ -333,10 +306,6 @@ elseif w== "صاك"  then
 return  "زاحفه 😂 منو هذا دزيلي صورهه"
 elseif w== "اجيت" or w=="اني اجيت" then
 return  "كْـٌﮩٌﮧٌ﴿😍﴾ـﮩٌول الـ୭ـهـٌ୭ـْلا❤️"
-elseif w== "طفي السبلت"  then
-return  "تم اطفاء السبلت بنجاح 🌚🍃"
-elseif w== "شغل السبلت"  then
-return  "تم تشغيل السبلت بنجاح بردتو مبردتو معليه  🌚🍃"
 elseif w== "حفلش"  then
 return  "افلش راسك 🤓"
 elseif w=="نايمين" then
@@ -367,7 +336,7 @@ elseif w== "معليك" or w== "شعليك" then
 return  "عليه ونص 😡"
 elseif w== "شدسون" or w== "شداتسوون" or w== "شدتسون" then
 return  "نطبخ 😐"
-elseif w== "شلونك فير"  then
+elseif w== botname.." شلونك"  then
 return "احســن مــن انتهــــہ شــلونـــك شــخــبـارك يـــول مۂــــشتـــاقـــلك شــو ماكـــو 😹🌚"
 elseif w== "يومه فدوه"  then
 return  "فدؤه الج حياتي 😍😙"
@@ -408,7 +377,7 @@ return  "اخليك بزاويه 380 درجه وانته تعرف الباقي �
 elseif w== "فديتك" or w== "فديتنك"  then
 return  "فداكـ/چ ثولان العالـم😍😂" 
 elseif w== "بوت"  then
-return  "أسمي فير 🌚🌸"
+return  " أسمي "..botname.." 🌚🌸"
 elseif w== "مساعدة"  then
 return  "لعرض قائمة المساعدة اكتب الاوامر 🌚❤️"
 elseif w== "زاحف"  then
@@ -460,13 +429,9 @@ return "اللهم عذب المدرسين 😢 منهم الاحياء والا
 elseif edited_message and settings.lock_edit =="no" and not is_owner(msg) then
 return "سحك وعدل 😹☝🏿"
 -------------- صوتيات
-elseif w == "فير عفط" and ww and msg.reply_id and is_sudo(msg) then
+elseif w==botname and ww == "عفط" and r3 and msg.reply_id and is_sudo(msg) then
 if msg.reply_id then
 sendVoice(msg.to.id, 'data/zeg.ogg', msg.reply_id, '💢اسمع الزيج  اسمع 🔊')
-end
-elseif w == "فير اضحك" and ww and msg.reply_id and is_sudo(msg) then
-if msg.reply_id then
- sendVideo(msg.to.id, 'data/fun.mp4', nil, caption, msg.reply_id )
 end
 
 ---------------------------------------------
@@ -495,10 +460,8 @@ end
 end
 return {
 patterns = {
-"^(فير عفط)(.*)$", 
-"^(فير اتفل)(.*)$", 
-"^(فير رزله)(.*)$", 
-"^(فير اضحك)(.*)$", 
+"^(.*) (عفط)(.*)$", 
+"^(.*) (رزله)(.*)$", 
 "^(تحب) (.*)$",
 "^(كله) (.*)$",
 "^(كول) (.*)$",

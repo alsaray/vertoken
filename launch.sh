@@ -41,7 +41,7 @@ elif [ "$1" = "update" ]; then
 	update
 	exit 1
 else
-	red " ֆνєявσт (سورس فير) يعمل حاليا...
+	green " جاري تشغيل سورس فير تـوكـن ֆνєявσт ...
 	"
-	lua ./bot/bot.lua
+lua ./bot/bot.lua
 fi

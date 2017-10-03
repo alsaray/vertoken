@@ -67,7 +67,7 @@ local function chat_list(msg)
 	send_msg(msg.to.id, message,nil,"html")
 end
 
-local function botrem(msg)
+ function botrem(msg)
 	local data = load_data(_config.moderation.data)
 	if data[tostring(msg.to.id)] then
 	data[tostring(msg.to.id)] = nil
@@ -115,7 +115,7 @@ send_msg(msg.to.id, '💢¦ _تم دعم المجموعه ليوم واحد _\n�
 end
 if chex and not exd and msg.from.id ~= sudo_id and not is_sudo(msg) then
 local text1 = '💢¦ اشتراك المجموعه انتهى💢 \n💢¦ '..msg.to.title..'\n\nID:  <code>'..msg.to.id..'</code>'
-local text2 = '💢¦ الاشتراك البوت انتهى \n💢¦ سوف اغادر \n💢¦ لتجديد الاشتراك راسل  @blcon.'
+local text2 = '💢¦ الاشتراك البوت انتهى \n💢¦ سوف اغادر \n💢¦ لتجديد الاشتراك راسل '..botname
 send_msg(sudo_id, text1, nil, 'html')
 send_msg(msg.to.id, text2, msg.id, 'html')
 botrem(msg)
@@ -132,8 +132,6 @@ end
 
 local function run(msg, matches)
 
-
-
 local data = load_data(_config.moderation.data)
 
   if tonumber(msg.from.id) == tonumber(sudo_id) then
@@ -143,7 +141,8 @@ local data = load_data(_config.moderation.data)
 	username = "@"..check_markdown(msg.reply.username)
     else
 	username = escape_markdown(msg.reply.print_name)
-    end
+end
+      if msg.reply.id == our_id then return end
    if already_sudo(tonumber(msg.reply.id)) then
     return "💢¦ _العضو_ : "..username.." \n💢¦ _الايدي_ :  ["..msg.reply.id.."]\n💢¦ انه بالتاكيد مطور"
     else
@@ -152,7 +151,8 @@ local data = load_data(_config.moderation.data)
      reload_plugins(true) 
     return "💢¦ _العضو_ : "..username.." \n💢¦ _الايدي_ :  ["..msg.reply.id.."]\n💢¦ تم ترقيتة ليصبح مطور"
       end
-	  elseif matches[2] and matches[2]:match('^%d+') then
+  elseif matches[2] and matches[2]:match('^%d+') then
+            if matches[2] == our_id then return end
    if not getUser(matches[2]).result then
    return "💢¦ لا يوجد عضو بهذا المعرف"
     end
@@ -169,11 +169,12 @@ local data = load_data(_config.moderation.data)
     return "💢¦ _العضو_ :   "..user_name.."\n💢¦ الايدي : ["..matches[2].."] \n💢¦ تم ترقيتة ليصبح مطور"
    end
    elseif matches[2] and string.match(matches[2], '@[%a%d_]')  then
+    local status = resolve_username(matches[2])
+         if status.information.id == our_id then return end
    if not resolve_username(matches[2]).result then
    return "💢¦ لا يوجد عضو بهذا المعرف"
-    end
-   local status = resolve_username(matches[2])
-   if already_sudo(tonumber(status.information.id)) then
+end
+if already_sudo(tonumber(status.information.id)) then
     return "💢¦ _العضو_ :   @"..check_markdown(status.information.username).."\n💢¦ الايدي : ["..status.information.id.."] \n💢¦ انه بالتاكيد مطور"
     else
           table.insert(_config.sudo_users, tonumber(status.information.id)) 
@@ -189,7 +190,8 @@ end
 	username = "@"..check_markdown(msg.reply.username)
     else
 	username = escape_markdown(msg.reply.print_name)
-    end
+end
+if tonumber(msg.reply.id) == tonumber(our_id) then return end
    if not already_sudo(tonumber(msg.reply.id)) then
     return "💢¦ _العضو_ : "..username.." \n💢¦ _الايدي_ :  ["..msg.reply.id.."]\n💢¦ انه بالتاكيد تم تنزيله من المطورين"
     else
@@ -199,6 +201,7 @@ end
     return "💢¦ _العضو_ : "..username.." \n💢¦ _الايدي_ :  ["..msg.reply.id.."]\n💢¦ تم تنزيله من المطورين"
       end
 	  elseif matches[2] and matches[2]:match('^%d+') then
+ if tonumber(matches[2]) == tonumber(our_id) then return end
   if not getUser(matches[2]).result then
    return "💢¦ لا يوجد عضو بهذا المعرف"
     end
@@ -214,11 +217,13 @@ end
      reload_plugins(true) 
     return "💢¦ _العضو_ :   "..user_name.." \n💢¦ _الايدي_ :  ["..matches[2].."] \n💢¦ تم تنزيله من المطورين"
       end
-   elseif matches[2] and string.match(matches[2], '@[%a%d_]')  then
+elseif matches[2] and string.match(matches[2], '@[%a%d_]')  then
+      local status = resolve_username(matches[2])
+   if tonumber(status.id) == tonumber(our_id) then return end
+
    if not resolve_username(matches[2]).result then
    return "💢¦ لا يوجد عضو بهذا المعرف"
     end
-   local status = resolve_username(matches[2])
    if not already_sudo(tonumber(status.information.id)) then
     return "💢¦ _العضو_ :   @"..check_markdown(status.information.username).." \n💢¦ _الايدي_ :  ["..status.information.id.."] \n💢¦ انه بالتاكيد تم تنزيله من المطورين"
     else
@@ -232,6 +237,8 @@ end
 end
 
 if is_sudo(msg) then
+
+
 
   
 if matches[1] == 'المجموعات' then
@@ -249,13 +256,11 @@ if matches[1] == 'تعطيل' and matches[2] and string.match(matches[2], '^%d+$
 			end
 			data[tostring(groups)][tostring(matches[2])] = nil
 			save_data(_config.moderation.data, data)
-	   send_msg(matches[2], "💢¦ تم تعطيل البوت من قبل المطور للاستفسار راسل @blcon", nil, 'md')
-    return '💢¦ المجموعة : *'..matches[2]..'* تم تعطيلها'
+	   send_msg(matches[2], "💢¦ تم تعطيل البوت من قبل المطور", nil, 'md')
+    send_msg(msg.to.id , '💢¦ المجموعة : *'..matches[2]..'* تم تعطيلها')
 		end
-
-
- 
-   if matches[1] == 'اذاعه' and matches[2]  then		
+  if matches[1] == 'اذاعه' and matches[2]  then	
+if tonumber(msg.from.id) ~= tonumber(sudo_id) then return "☔️هذا الامر للمطور الاساسي فقط 🌑" end
   local data = load_data(_config.moderation.data)		
   local bc = matches[2]		
   local i = 1
@@ -270,11 +275,11 @@ if matches[2] == 'الخروج التلقائي' and is_sudo(msg) then
 --Enable Auto Leave
      if matches[1] == 'تعطيل' then
     redis:del('AutoLeaveBot')
-   return '💢¦ تم تفعيل الخروج التلقائي'
+     return '💢¦ تم تعطيل الخروج التلقائي'
 --Disable Auto Leave
      elseif matches[1] == 'تفعيل' then
     redis:set('AutoLeaveBot', true)
-   return '💢¦ تم تعطيل الخروج التلقائي'
+ return '💢¦ تم تفعيل الخروج التلقائي'
 --Auto Leave Status
 end
 end
@@ -289,11 +294,7 @@ end
 
 if msg.to.type == 'supergroup' or msg.to.type == 'group' then
 
-if matches[1] == 'بوت غادر' and is_sudo(msg) then
-send_msg(msg.to.id,"💢¦ تم حذف بيانات المجموعة \n💢¦  سوف اغادر باي 👋🏿" )
-botrem(msg)
-return
-end
+
 
  if not data[tostring(msg.to.id)] then return end
 
@@ -305,8 +306,8 @@ redis:setex('ExpireDate:'..msg.to.id, extime, true)
 if not redis:get('CheckExpire::'..msg.to.id) then
 redis:set('CheckExpire::'..msg.to.id)
 end
-send_msg(msg.to.id, '💢¦تم شحن الاشتراك ل [<code>'..matches[2]..'</code>] يوم ⌚️',msg.id, 'html')
-send_msg(sudo_id, ' 💢¦تم تمديد فترة الاشتراك لـ[<code>'..matches[2]..'</code>].\n 💢¦ في المجموعة [<code>'..msg.to.title..'</code>]',msg.id, 'html')
+send_msg(msg.to.id, '💢¦تم شحن الاشتراك ل\n [<code>'..matches[2]..'</code>] يوم ⌚️',msg.id, 'html')
+send_msg(sudo_id, ' 💢¦تم تمديد فترة الاشتراك لـ[<code>'..matches[2]..'</code>].\n💢¦ في المجموعة\n💢¦ [<code>'..msg.to.title..'</code>]',nil, 'html')
 else
 send_msg(msg.to.id,  '_ اختر من 1 الى 1000 فقط ⌚️    ._',msg.id, 'md')
 end
@@ -318,14 +319,16 @@ if expi == -1 then
 	send_msg(msg.to.id, '_المجموعة مفعله مدى الحياة⌚️_', msg.id, 'md')
 else
 local day = math.floor(expi / 86400) + 1
-	if day == 1 then
-	day = 'يوم واحد' 
+if expi == -1 then
+	expire_date = 'مفتوح🎖'
+    elseif day == 1 then
+	expire_date = 'يوم واحد' 
 	elseif day == 2 then
-   	day = 'يومين'
-	elseif day == 3 then
-   	day = '3 ايام'
+   	expire_date = 'يومين'
+	elseif day <= 10 then
+   	expire_date = day..' ايام'
    	else
-	day = day..' يوم'
+	expire_date = day..' يوم'
 end
  send_msg(msg.to.id, '💢¦ باقي '..day..' وينتهي اشتراك البوت 💯', msg.id, 'md')
 end
@@ -337,7 +340,7 @@ if matches[1]:lower() == 'الاشتراك' and matches[2] == '1' and not matche
 			if not redis:get('CheckExpire::'..msg.to.id) then
 				redis:set('CheckExpire::'..msg.to.id,true)
 			end
-send_msg(sudo_id, '💢¦ تم تفعيل المجموعة [<code>'..msg.to.title..'</code>]\n💢¦الاشتراك : شهر واحد 🛠 )', msg.id, 'html')
+send_msg(sudo_id, '💢¦ تم تفعيل المجموعة\n💢¦  [ <code>'..msg.to.title..'</code> ]\n💢¦الاشتراك : شهر واحد 🛠 )' , nil, 'html')
 send_msg(msg.to.id, '💢¦ تم تفعیل المجموعه ستبقی صالحة الی 30 یوم⌚️', msg.id, 'md')
 		end
 if matches[1]:lower() == 'الاشتراك' and matches[2] == '2' and not matches[3] then
@@ -346,7 +349,7 @@ if matches[1]:lower() == 'الاشتراك' and matches[2] == '2' and not matche
 			if not redis:get('CheckExpire::'..msg.to.id) then
 				redis:set('CheckExpire::'..msg.to.id,true)
 			end
-send_msg(sudo_id, '💢¦ تم تفعيل المجموعة [<code>'..msg.to.title..'</code>]\n💢¦ الاشتراك : 3 اشهر 🛠 )', msg.id, 'html')
+send_msg(sudo_id, '💢¦ تم تفعيل المجموعة \n💢¦ [ <code>'..msg.to.title..'</code> ]\n💢¦ الاشتراك : 3 اشهر 🛠 )', nil, 'html')
 send_msg(msg.to.id, '💢¦ تم تفعيل البوت بنجاح وصلاحيته لمدة 90 يوم  )', msg.id, 'md')
 		end
 if matches[1]:lower() == 'الاشتراك' and matches[2] == '3' and not matches[3] then
@@ -354,7 +357,7 @@ if matches[1]:lower() == 'الاشتراك' and matches[2] == '3' and not matche
 			if not redis:get('CheckExpire::'..msg.to.id) then
 				redis:set('CheckExpire::'..msg.to.id,true)
 			end
-send_msg(sudo_id, '💢¦ تم تفعيل المجموعة [<code>'..msg.to.title..'</code>]\n💢¦ الاشتراك : مدى الحياه', msg.id, 'html')
+send_msg(sudo_id, '💢¦ تم تفعيل المجموعة \n💢¦ [ <code>'..msg.to.title..'</code> ]\n💢¦ الاشتراك : مدى الحياه', nil, 'html')
 send_msg(msg.to.id, '💢¦ تم تفعيل البوت بنجاح وصلاحيته مدى الحياه ', msg.id, 'md')
 end
 end
@@ -365,15 +368,14 @@ end
 ---------------Help Tools----------------
   
 if matches[1] == 'المطور' and data[tostring(msg.to.id)]  then
-return _config.info_text
+send_msg(msg.to.id, _config.info_text, msg.id)
 end
-if matches[1] == "المطورين" and data[tostring(msg.to.id)]  then
+if matches[1] == "المطورين" and data[tostring(msg.to.id)] and is_sudo(msg) then
 return sudolist(msg)
 end
 
 
 if matches[1]:lower() == 'معلوماتي' or matches[1]:lower() == 'موقعي'  then
-if msg.from.first_name then
 if msg.from.username then username = '@'..msg.from.username
 else username = '<i>ما مسوي  😹💔</i>'
 end
@@ -382,15 +384,12 @@ elseif is_owner(msg) then rank = 'مدير المجموعه 😽'
 elseif is_mod(msg) then rank = 'ادمن في البوت 😺'
 else rank = 'مجرد عضو 😹'
 end
-local info = '<b>💯️¦ اهـلا بـك معلوماتك :</b>\n\n<b>💢¦ الاسم الاول :</b> <i>'..msg.from.first_name
-..'</i>\n<b>💢¦ الاسم الثاني :</b> <i>'..(msg.from.last_name or "---")
+local info = '<b>💯️¦ اهـلا بـك معلوماتك :</b>\n\n<b>💢¦ الاسم :</b> <i>'..namecut(msg.from.first_name)
 ..'</i>\n<b>💢¦ المعرف:</b> '..username
 ..'\n<b>💢¦ الايدي :</b> [ <code>'..msg.from.id
 ..'</code> ]\n<b>💢¦ ايدي الكروب :</b> [ <code>'..msg.to.id
-..'</code> ]\n<b>💢¦ موقعك :</b> <i>'..rank
-..'</i>\n💢¦ مـطـور الـسـورس : @blcon\n💢¦ قـنـاه الـسـورس : @verxbot'
+..'</code> ]\n<b>💢¦ موقعك :</b> <i>'..rank..'</i>'
 send_msg(msg.to.id, info, msg.id, 'html')
-end
 end
  if matches[1] == "مواليدي" then
 local kyear = tonumber(os.date("%Y"))
@@ -417,6 +416,7 @@ if matches[1] == "الاوامر" then
 if not is_mod(msg) then return "💢¦ للاداريين فقط 🎖" end
 return [[
 ♨️¦ الاوامـر الـ؏ـامـة
+
 💢¦ـ➖➖➖➖➖
 💢¦ م1 ➙ اوامر الادارة
 💢¦ م2 ➙ اوامر اعدادات المجموعه
@@ -424,11 +424,11 @@ return [[
 💢¦ م4 ➙ الاوامـر الـ؏ـامـة
 💢¦ م المطور ➙ اوامر المطور
 💢¦ اوامر الرد ➙ لاضافه رد معين
+💢¦ اوامر الزخرفه ➙ لزخرفه الكلمات
+💢¦ اوامر الملفات ➙ لاضافه وتفعيل وحذف الملفات
 💢¦ـ➖➖➖➖➖
 
-💬¦ للاستفسار راسل المطور 💡
-
-]]
+💬¦ راسلني للاستفسار 💡↭ ]]..check_markdown(sudouser) 
 end
 
 if matches[1]== 'م1' then
@@ -444,23 +444,25 @@ return [[
 💢¦ الاداريين : لعرض قائمة الاداريين
 💢¦ـ➖➖➖➖➖
 💬 اوامر الطرد والحضر 🀄️
-💢¦ بلوك بالرد : لطرد العضو من المجموعه
-💢¦ حظر : لحظر وطرد عضو من المجموعه 
+💢¦ طرد بالرد : لطرد العضو من المجموعه
+💢¦ طرد + المعرف : لطرد العضو من المجموعه
+💢¦ حظر بالرد : لحظر وطرد عضو من المجموعه 
+💢¦ حظر + المعرف : لحظر وطرد عضو من المجموعه 
 💢¦ الغاء الحظر : لالغاء الحظر عن عضو 
 💢¦ منع : لمنع كلمه داخل المجموعه
 💢¦ الغاء منع : لالغاء منع الكلمه  
 💢¦ كتم  : لكتم عضو بواسطة الرد
 💢¦ الغاء الكتم  : لالغاء الكتم بواسطة الرد
 💢¦ـ➖➖➖➖➖
-💬¦ للاستفسار راسل المطور 💡
+💬¦ راسلني للاستفسار 💡↭ ]]..check_markdown(sudouser) 
 
-]]
 end
 
 if matches[1]== 'م2' then
 if not is_mod(msg) then return "💢¦ للاداريين فقط 🎖" end
 return [[
 📌 اوامر الوضع للمجموعه 🀄️
+
 💢¦ـ➖➖➖➖➖
 💢¦ ضع الترحيب + الكلمه  :↜ لوضع ترحيب  
 💢¦ ضع قوانين :↜ لوضع قوانين 
@@ -469,7 +471,9 @@ return [[
 💢¦ الـرابـط  خاص :↜  لارسال الرابط  خاص
 💢¦ الـرابـط :↜  لعرض الرابط  
 💢¦ـ➖➖➖➖➖
+
 📌 اوامر رؤية الاعدادات 🀄️
+
 💢¦ القوانين : لعرض  القوانين 
 💢¦ الادمنيه : لعرض  الادمنيه 
 💢¦ الاداريين : لعرض  الاداريين 
@@ -480,16 +484,15 @@ return [[
 💢¦ الوسائط : لعرض اعدادات الميديا 
 💢¦ المجموعه : لعرض معلومات المجموعه 
 
-💬¦ للاستفسار راسل المطور 💡
+💬¦ راسلني للاستفسار 💡↭ ]]..check_markdown(sudouser) 
 
-]]
   end
 
 if matches[1]== 'م3' then
 if not is_mod(msg) then return "💢¦ للاداريين فقط 🎖" end
 return [[
 ⚡️ اوامر حماية المجموعه ⚡️
-💢¦ـ➖➖➖➖➖
+💢¦ـ➖➖➖➖➖ـ
 💢¦️ قفل ┇ فتح :  التثبيت
 💢¦️ قفل ┇ فتح :  التعديل
 💢¦️ قفل ┇ فتح :  البصمات
@@ -503,9 +506,11 @@ return [[
 💢¦️ قفل ┇ فتح : الروابط
 💢¦️ قفل ┇ فتح : التاك
 💢¦️ قفل ┇ فتح : البوتات
+💢¦️ قفل ┇ فتح : البوتات بالطرد
 💢¦️ قفل ┇ فتح : الكلايش
 💢¦️ قفل ┇ فتح : التكرار
 💢¦️ قفل ┇ فتح :  التوجيه
+💢¦️ قفل ┇ فتح :  الانلاين
 💢¦️ قفل ┇ فتح : الجهات 
 💢¦️ قفل ┇ فتح : المجموعه 
 💢¦️ قفل ┇ فتح : الــكـــل
@@ -513,10 +518,10 @@ return [[
 📌¦ تشغيل ┇ ايقاف : الترحيب 
 💬¦ تشغيل ┇ ايقاف : الردود 
 📢¦ تشغيل ┇ ايقاف : التحذير
+🗨¦ تشغيل ┇ ايقاف : الايدي
 💢¦ـ➖➖➖➖➖
-💬¦ للاستفسار راسل المطور 💡
+💬¦ راسلني للاستفسار 💡↭ ]]..check_markdown(sudouser) 
 
-]]
 end
 
 if matches[1]== 'م4' then
@@ -525,10 +530,10 @@ return [[
 📍💭 اوامر اضافيه 🔹🚀🔹
 💢¦ـ➖➖➖➖➖
 🕵🏻 معلوماتك الشخصيه 🙊
-💢¦ اسمي : لعرض اسمك 🎈
-💢¦ معرفي : لعرض معرفك 🎈
-💢¦ ايديي : لعرض ايديك 🎈
-💢¦ رقمي : لعرض رقمك  🎈
+💢¦ اسمي : لعرض اسمك 💯
+💢¦ معرفي : لعرض معرفك 💯
+💢¦ ايديي : لعرض ايديك 💯
+💢¦ رقمي : لعرض رقمك  💯
 💢¦ـ➖➖➖➖➖
 💢¦ اوامر التحشيش 😄
 📌¦ تحب + (اسم الشخص)
@@ -536,10 +541,9 @@ return [[
 📌¦ كول + (اسم الشخص) 
 📌¦ كله + الرد + (الكلام) 
 💢¦ـ➖➖➖➖➖
-💬¦ للاستفسار راسل المطور 💡
 
+💬¦ راسلني للاستفسار 💡↭ ]]..check_markdown(sudouser) 
 
-]]
 end
 
 if matches[1]== "م المطور" then
@@ -549,17 +553,16 @@ return [[
 
 💢¦ تفعيل  : لتفعيل البوت 
 💢¦ تعطيل : لتعطيل البوت 
-💢¦ اذاعه : لنشر كلمه 
-💢¦ بوت غادر : لطرد البوت
-💢¦ صنع مجموعه : لصنع مجموعه 
-💢¦ سوبر : لجعل المجموعه خارقه
+💢¦️ تفعيل ┇ تعطيل : الخروج التلقائي 
+💢¦ اذاعه : لنشر كلمه لكل المجموعات
+💢¦` اسم بوتك + غادر :` لطرد البوت
 💢¦ مسح الادمنيه : لمسح الادمنيه 
 💢¦ مسح الاداريين : لمسح الاداريين 
 💢¦ تحديث: لتحديث ملفات البوت
 💢¦ـ➖➖➖➖➖
-💬¦ للاستفسار راسل المطور 💡
 
-]]
+💬¦ راسلني للاستفسار 💡↭ ]]..check_markdown(sudouser) 
+
 end
 
 if matches[1]== 'اوامر الرد' then
@@ -573,30 +576,92 @@ return [[
 💢¦ رد مسح  + الرد المراد مسحه
 💢¦ رد مسح الكل : لمسح الكل
 💢¦ـ➖➖➖➖➖
-💬¦ للاستفسار راسل المطور 💡
+💬¦ راسلني للاستفسار 💡↭ ]]..check_markdown(sudouser) 
+
+end
+
+if matches[1]== "اوامر الزخرفه" then
+if not is_mod(msg) then return "💢¦ للاداريين فقط 🎖" end
+return [[☔️¦ اوامر الزخرفةة 🌑
+
+💢¦ زخرف + الكلمه المراد زخرفتها بالانكلش 🍃
+💢¦ زخرفه + الكلمه المراد زخرفتها بالعربي 🍃
+
+]]
+end
+
+if matches[1]== "اوامر الملفات" then
+if tonumber(msg.from.id) ~= tonumber(sudo_id) then return "☔️هذا الاوامر للمطور الاساسي فقط 🌑" end
+return [[☔️¦ اوامر الملفات 🌑
+
+💢¦ /p | لعرض قائمه الملفات السورس 🍃
+💢¦ /p + اسم الملف المراد تفعيله 🍃
+💢¦ /p - اسم الملف المراد تعطيله 🍃
+💢¦ sp + الاسم | لارسال الملف اليك 🍃
+💢¦ dp + اسم الملف المراد حذفه 🍃
+💢¦ sp all | لارسالك كل ملفات السورس 🍃
 
 ]]
 end
 
 if matches[1]=="start" then
+local usersudo = string.gsub(sudouser, '@', '')
 keyboard = {}
 keyboard.inline_keyboard = {
 {
-
-
-
-{text= '♨️ الــمــطــور ❤️💯' ,url = 'https://t.me/blcon'} -- هنا خلي معرفك انته كمطور
+{text= '♨️ الــمــطــور ❤️💯' ,url = 'https://t.me/'..usersudo} -- هنا خلي معرفك انته كمطور
 }					
 }
-tkey = [[💢¦ مٌرَحُبّاً انَا بّوَتْ  🎖
-💢¦ اٌختْصّاصّيَ حُمٌايَةِ كِرَوَبّاتْ
-💢¦¦مٌنَ الُسِبّامٌ وَالُوَسِائطِ وَالُتْكِرَارَ وَالٌُخ...
-]]
-send_key(msg.chat.id, tkey, keyboard, msg.message_id, "html")
+tkey = [[💢¦ مٌرَحُبّاً انَا بّوَتْ اسِمٌيَ ]]..botname..[[ 🎖
+💢¦ اقًوَمٌ بّحُمٌايَةِ الُمٌجْمٌوَْعات حُتْى 20k كِيَ 
+💢¦ الُمٌطِوَرَ فَقًطِ يَسِتْطِيَْع تْفَْعيَلُيَ فَيَ الُمٌجْمٌوَْعات ْ⇩⇩
+💢¦ اوَ اتْرَكِ رَسِالُتْكِ ُهنَا وَسِوَفَ يَرَدِ ْعلُيَكِ الُمٌطِوَر ]]
+send_key(msg.chat.id, tkey, keyboard, msg.id,"html")
 end
-    
-    
-    
+
+if matches[1]=="رتبتي" and not matches[2] then
+if is_sudo(msg) then
+rank = 'المطور مالتي 😻'
+elseif is_owner(msg) and msg.to.type ~= 'private'  then
+rank = 'مدير المجموعه 😽'
+elseif is_mod(msg) and msg.to.type ~= 'private'  then
+rank = ' ادمن في البوت 😺'
+elseif  is_whitelist(msg.from.id, msg.to.id) and msg.to.type ~= 'private' then
+rank = 'عضو مميز 🎖'
+else
+if msg.to.type ~= 'private' then
+rank = 'مجرد عضو 😹'
+else
+rank = 'لست مطور في السورس ✖️'
+end
+end
+return '💢¦ رتبتك : '..rank
+end
+
+if matches[1]=="الرتبه" and not matches[2] and is_owner(msg) and not  msg.to.type ~= 'private' then
+if msg.reply_id then
+if msg.reply.id == our_id  then
+rank = 'هذا البوت 🙄☝🏿'
+elseif msg.reply.id == msg.from.id  then
+rank = 'انته المطور 👨🏼‍🔧'
+elseif is_sudo1(msg.reply.id) then
+rank = 'المطور هذا 😻'
+elseif is_owner1( msg.to.id,msg.reply.id) then
+rank = 'مدير المجموعه 😽'
+elseif is_mod1( msg.to.id,msg.reply.id) then
+rank = ' ادمن في البوت 😺'
+elseif is_whitelist(msg.reply.id, msg.to.id)  then
+rank = 'عضو مميز 🎖'
+else
+rank = 'مجرد عضو 😹'
+end
+if msg.reply.username then usernamrxx = "@"..msg.reply.username else usernamrxx = " لا يوجد 📛" end
+local rtba = '💢¦ اسمه : '..msg.reply.first_name..'\n💢¦معرفه : '..usernamrxx..' \n💢¦ رتبته : '..rank
+send_msg(msg.to.id,rtba , msg.id)
+else
+return "📌 سوي رد للعضو حته اكلك شنو رتبته🕵🏻"
+end
+end
 
 end
 return {
@@ -609,12 +674,16 @@ return {
     "^(م2)$", 
     "^(م3)$", 
     "^(م4)$", 
+    "^(اوامر الزخرفه)$", 
+    "^(اوامر الملفات)$", 
     "^(معلوماتي)$",
     "^(موقعي)$",
     "^(رفع مطور)$",
     "^(تنزيل مطور)$",
-    "^(رفع مطور) (.*)$",
-    "^(تنزيل مطور) (.*)$",
+    "^(رفع مطور) (%d+)$",
+    "^(تنزيل مطور) (%d+)$",
+    "^(رفع مطور) (@[%a%d%_]+)$",
+    "^(تنزيل مطور) (@[%a%d%_]+)$",
     "^(المطورين)$",
     "^(المجموعات)$",
     "^(الاشتراك)$",
@@ -622,12 +691,12 @@ return {
     "^(مواليدي) (.+)/(.+)/(.+)",
     "^(شحن) (%d+)$",
     "^(اذاعه) (.*)$",
-    "^(بوت غادر)$",
     "^(الخروج التلقائي)$",
     "^(تفعيل) (.*)$",
     "^(تعطيل) (.*)$",
     "^(المطور)$",
-
+    "^(رتبتي)$",
+    "^(الرتبه)$",
     },
   run = run,
   pre_process = pre_process

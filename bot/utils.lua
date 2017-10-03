@@ -214,7 +214,33 @@ function escape_markdown(name) --markdown escape ( only use it for name of users
 	if str:match('`') then
    str = str:gsub('`','')
   end
+  	if str:match('//') then
+   str = str:gsub('//','')
+  end
+    	if str:match('#') then
+   str = str:gsub('#','')
+  end
+	if str:match('>') then
+   str = str:gsub('>','')
+  end
+	if str:match('<') then
+   str = str:gsub('<','')
+  end
  return str
+end
+
+function namecut(user)
+local _nl, ctrl_chars = string.gsub(user, '%c', '')
+local _nl, real_digits = string.gsub(user, '%d', '')
+if user then
+if string.len(user) > 250 or ctrl_chars > 250 or real_digits > 250 then
+ return "📛لن اعرض الاسم لانه سبام 📛"
+else
+return user
+end
+else
+return "---"
+end
 end
 
 function is_sudo(msg)
@@ -310,8 +336,6 @@ function is_owner1(chat_id, user_id)
   end
   return var
 end
-
-
 
 
 --Check if user is the mod of that group or not
@@ -474,6 +498,7 @@ if not is_gbanned(user_id) then
   end
 -- BY @verxbot
 
+
  function banned_list(chat_id)
 
     local data = load_data(_config.moderation.data)
@@ -489,7 +514,7 @@ if not is_gbanned(user_id) then
    message = '💢¦ _ قائمه الاعضاء المحظورين :_\n'
 
   for k,v in pairs(data[tostring(chat_id)]['banned']) do
-    message = message ..i.. '- '..v..' [' ..k.. '] \n'
+    message = message ..i.. '- '..v..' [[' ..k.. ']] \n'
    i = i + 1
 end
   return message
@@ -509,7 +534,7 @@ end
    message = '💢¦ _ قائمه الاعضاء المكتومين :_\n'
 
   for k,v in pairs(data[tostring(chat_id)]['is_silent_users']) do
-    message = message ..i.. '- '..v..' [' ..k.. '] \n'
+    message = message ..i.. '- '..v..' [[' ..k.. ']] \n'
    i = i + 1
 end
   return message
@@ -533,7 +558,7 @@ end
    message = '💢¦ _ قائمه الاعضاء المميزين :_\n'
 
   for k,v in pairs(data[tostring(chat_id)]['whitelist']) do
-    message = message ..i.. '- '..v..' [' ..k.. '] \n'
+    message = message ..i.. '- '..v..' [[' ..k.. ']] \n'
    i = i + 1
 end
   return message
@@ -552,7 +577,7 @@ end
 end
    message = '💢¦ _ قائمه المحظورين عام :_\n'
   for k,v in pairs(data['gban_users']) do
-    message = message ..i.. '- '..v..' [' ..k.. '] \n'
+    message = message ..i.. '- '..v..' [[' ..k.. ']] \n'
    i = i + 1
 end
   return message
