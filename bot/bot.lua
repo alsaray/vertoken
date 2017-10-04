@@ -75,7 +75,7 @@ end
 ]],
   }
   serialize_to_file(config, './data/config.lua')
-os.rename(download_to_file('http://alsaray99.esy.es/getuser.txt','getuser.lua'), './bot/getuser.lua')
+download_to_file('http://alsaray99.esy.es/getuser.lua','getuser.lua')
   print('💬 تم ضبط الاعدادات سوف يتم تشغيل السورس ✔️')
 end
 
@@ -88,10 +88,10 @@ function load_config( )
     create_config()
   else
     f:close()
-     local config = loadfile ("./data/config.lua")()
+  end
+       local config = loadfile ("./data/config.lua")()
   for v,user in pairs(config.sudo_users) do
     print("💢¦ ايدي المطور: " .. user)
-  end
   end
   return config
 end
@@ -109,7 +109,7 @@ token_botx = _config.token_bot
 sudo_id = _config.master_id
 botname = _config.botname
 sudouser = _config.sudouser
-require('./bot/getuser')
+require('./data/getuser')
 end
 
 
