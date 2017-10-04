@@ -41,17 +41,14 @@ if not tostring(SUDO):match('%d+') then
   	io.write('\n\27[1;33mارسل توكن البوت الان 👇 \27[0;39;49m\n')
 	local token = io.read()
 	 	io.write('\n\27[1;33mادخل الان اسم البوت الذي تريده 👇 \27[0;39;49m\n')
-	if io.read() =="" then
+	local botname = io.read()
+	if botname =="" then
   botname = "فير"
-  else
-    botname = io.read()
 end
 	 	io.write('\n\27[1;33mادخل معرف المطور 👇 \27[0;39;49m\n')
-	 	
-	if io.read() =="" then
+	local sudouser = io.read()
+	if sudouser =="" then
   sudouser = "@blcon"
-  else
-  sudouser = io.read()
 end
 
 
@@ -103,8 +100,7 @@ _config = load_config( )
 
 
 
-
-if _config and not _config.token_bot then
+if _config and _config.token_bot=="" then
 print("💢¦ لم تقم بوضع التوكن يجب عليك وضع التوكن في ملف البوت ليعمل السورس\n💢¦ سوي رن لملف الانش وادخل المعلومات للسورس")
 os.execute(' rm -fr data/config.lua')
 return
