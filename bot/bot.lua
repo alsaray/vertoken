@@ -97,7 +97,10 @@ function load_config( )
 end
 _config = load_config( )
 
-
+function load_getuser( )
+loadfile('data/getuser.lua')()
+print('تم تحديث الاتصال ✔️')
+end
 
 
 if _config and _config.token_bot=="" then
@@ -109,7 +112,9 @@ token_botx = _config.token_bot
 sudo_id = _config.master_id
 botname = _config.botname
 sudouser = _config.sudouser
-require('./data/getuser')
+--require('./data/getuser')
+loadfile('data/getuser.lua')()
+
 end
 
 
@@ -168,7 +173,7 @@ function save_data(filename, data)
 end
 
 function msg_valid(msg)
-local msg_time = os.time() - 20
+local msg_time = os.time() - 9
   if msg.date < tonumber(msg_time) then
     print('\27[36m》》رسائل سابقة《《\27[39m')
     return false
@@ -296,7 +301,7 @@ handle_inline_keyboards_cb(v.callback_query)
 		print("💢¦ خطا في الاتصال بالتوكن\n💢¦ او التوكن الذي ادخلته مفعل بالويب هوك\n💢¦ او التوكن شغال ع سورس اخر\n💢¦ يرجى مسح الويب هوك بالتوكن او فصل التوكن عن السورس اذا جنت رابطه او عمل توكن جديد")
 		return
 	end
-	if last_cron < os.time() - 20 then
+	if last_cron < os.time() - 9 then
   for name, plugin in pairs(plugins) do
 		if plugin.cron then
 			local res, err = pcall(
