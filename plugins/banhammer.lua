@@ -176,11 +176,10 @@ if is_mod1(msg.to.id, tonumber(matches[2])) then
    return "💢¦ عذرا لا استطيع  كتم المدراء او الادمنيه "
     end
   if is_silent_user(tonumber(matches[2]), msg.to.id) then
-    return "💢¦ العضو :    : "..matches[2].."\n 💢¦ انه بالتاكيد تم كتمه ✔️ "
+    return "💢¦ العضو : "..matches[2].."\n 💢¦ انه بالتاكيد تم كتمه ✔️ "
     else
-   ban_user('', matches[2], msg.to.id)
-     kick_user(tonumber(matches[2]), msg.to.id)
-    return "💢¦ العضو :    : "..matches[2].." \n💢¦  تم  كتمه ✔️"
+   silent_user("@", tonumber(matches[2]), msg.to.id)
+    return "💢¦ العضو : "..matches[2].." \n💢¦  تم  كتمه ✔️"
         end
      end
    end
@@ -256,11 +255,11 @@ if tonumber(matches[2]) == tonumber(our_id) then
    return "💢¦ عذرا لا استطيع حظر عام لنفسي ❌"
     end
   if is_gbanned(tonumber(matches[2])) then
-    return "💢¦ العضو :    : "..matches[2].."\n 💢¦ انه بالتاكيد تم حظره ✔️ عام  "
+    return "💢¦ العضو : "..matches[2].."\n 💢¦ انه بالتاكيد تم حظره ✔️ عام  "
     else
    banall_user('', matches[2])
      kick_user(tonumber(matches[2]), msg.to.id)
-    return "💢¦ العضو :    : "..matches[2].." \n💢¦  تم  حظره عام ✔️  "
+    return "💢¦ العضو : "..matches[2].." \n💢¦  تم  حظره عام ✔️  "
         end
      end
    end
@@ -311,11 +310,16 @@ unbanall_user(msg.reply.id)
    return gbanned_list(msg)
    end
    -----------
-   if matches[1] == "مسح" and not matches[2] and msg.reply_id and is_mod(msg) then
+
+   ---------------------------clean---------------------------
+   if matches[1] == 'مسح' and is_mod(msg) then
+       
+if matches[2] and msg.reply_id and is_mod(msg) then
 del_msg(msg.to.id, msg.reply_id)
 del_msg(msg.to.id, msg.id)
 end
-if matches[1] == 'مسح' and matches[2] and string.match(matches[2], '^%d+$') and is_mod(msg) then
+
+if matches[2] and string.match(matches[2], '^%d+$') and is_mod(msg) then
 local num = matches[2]
 if 100 < tonumber(num) then
 return "💢¦_حدود المسح ,  يجب ان تكون ما بين _ *[2-100]*"
@@ -326,8 +330,6 @@ del_msg(msg.to.id,msg.id - i)
 end
 return"🗑¦ تم مسح `"..num.."` رسالة  💯"
 end
-   ---------------------------clean---------------------------
-   if matches[1] == 'مسح' and is_mod(msg) then
        
 	if matches[2] == 'المحظورين' then
 		if next(data[tostring(msg.to.id)]['banned']) == nil then
