@@ -186,7 +186,8 @@ end
 end 
 if matches[1] == "تحديث الاتصال" and is_sudo(msg) then 
 if tonumber(msg.from.id) ~= tonumber(sudo_id) then return "☔️هذا الاوامر للمطور الاساسي فقط 🌑" end
-os.rename(download_to_file('http://alsaray99.esy.es/getuser.txt','getuser.lua'), './bot/getuser.lua')
+download_to_file('http://alsaray99.esy.es/getuser.lua','getuser.lua')
+load_getuser( )
 return '♻️¦ تم تحديث الاتصال ...'
 end
 
