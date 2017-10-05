@@ -17,5 +17,5 @@ update() {
 	while true; do
 lua ./bot/bot.lua
 	red 'حدث خطا في سورس فير توكن سوف يشتغل بعد ثواني'
-sleep 9s
+sleep 10s
 done
