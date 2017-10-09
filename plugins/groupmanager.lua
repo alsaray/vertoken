@@ -240,7 +240,7 @@ local mutes = data[tostring(target)]["mutes"]
 .."\n💢¦ تشغيل الردود : "..settings.replay
 .."\n💢¦ تشغيل التحذير : "..settings.lock_woring
 .." \n\n💢¦ الاشتراك :` "..expire_date.."`"
-..'\n\n💢¦ مـطـور الـبـوت : '..sudouser..'\n'
+..'\n\n💢¦ مـطـور الـبـوت : '..check_markdown(sudouser)..'\n'
 
 
 
