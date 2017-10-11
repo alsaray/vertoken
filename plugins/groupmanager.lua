@@ -78,7 +78,7 @@ mute_inline = 'no'
       data[tostring(groups)][tostring(msg.to.id)] = msg.to.id
       save_data(_config.moderation.data, data)
 if tonumber(msg.from.id) ~= tonumber(sudo_id) then
-send_msg(sudo_id, '💢¦ تـم تـفـعـيـل الـمـجـمـوعـه ✔️\n💢¦ '..msg.to.title..'️\n💢¦ ايدي المجموعه : '..msg.to.id..'\n💢¦ بواسطة : '..msg.from.first_name..'\n💢¦ معرفه : @'..msg.from.username)
+send_msg(sudo_id, '💢¦ تـم تـفـعـيـل الـمـجـمـوعـه ✔️\n💢¦ '..msg.to.title..'️\n💢¦ ايدي المجموعه : '..msg.to.id..'\n💢¦ بواسطة : '..msg.from.first_name..'\n💢¦ معرفه : @'..(msg.from.username or "---"))
 end
      send_msg(msg.to.id, '💢¦ تـم تـفـعـيـل الـمـجـمـوعـه ✔️', msg.id,'md')
 end
