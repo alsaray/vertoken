@@ -314,7 +314,7 @@ unbanall_user(msg.reply.id)
    ---------------------------clean---------------------------
    if matches[1] == 'مسح' and is_mod(msg) then
        
-if matches[2] and msg.reply_id and is_mod(msg) then
+if not matches[2] and msg.reply_id and is_mod(msg) then
 del_msg(msg.to.id, msg.reply_id)
 del_msg(msg.to.id, msg.id)
 end
