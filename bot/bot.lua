@@ -1,157 +1,37 @@
---[[
-by omar alsaray @blcon  \ @verxbot
-اي استفسار او لديك مشكله تابع قناتي @verxbot 
-او مراسلتي ع الخاص
-تم تعريب االترمنال من قبل عمر السراي
-]]
-package.path = package.path..';.luarocks/share/lua/5.2/?.lua;.luarocks/share/lua/5.2/?/init.lua'
-package.cpath = package.cpath..';.luarocks/lib/lua/5.2/?.so'
-require('./bot/utils')
-require('./bot/methods')
-require('./bot/super_lock')
+-- BY OMER ALSARAY
+-- BY @blcon
+-- BY @verxbot
 
-http = require('socket.http')
-JSON = (loadfile "./libs/dkjson.lua")()
-https = require('ssl.https')
-URL = require('socket.url')
-curl = require('cURL')
-ltn12 = require("ltn12")
-redis = (loadfile "./libs/redis.lua")()
-json = (loadfile "./libs/JSON.lua")()
-JSON = (loadfile "./libs/dkjson.lua")()
+tdcli = dofile('./tg/tdcli.lua')
 serpent = (loadfile "./libs/serpent.lua")()
-if notredis then
-print('\27[31m💢¦ مرحبا عزيزي \n💢¦ redis السورس يحتاج الى ريدز  \n💢¦ redis-server  لحل هذا المشكله افتح ترمنال جديد واكتب   \n💢¦ launch.sh وبعدها ارجع سوي رن لملف الـ  \n💢¦ تحياتي عمر السراي ...  👋🏿\27[39m')
-return
+feedparser = (loadfile "./libs/feedparser.lua")()
+require('./bot/utils')
+require('./libs/lua-redis')
+URL = require "socket.url"
+http = require "socket.http"
+https = require "ssl.https"
+ltn12 = require "ltn12"
+json = (loadfile "./libs/JSON.lua")()
+mimetype = (loadfile "./libs/mimetype.lua")()
+redis = (loadfile "./libs/redis.lua")()
+JSON = (loadfile "./libs/dkjson.lua")()
+local lgi = require ('lgi')
+local notify = lgi.require('Notify')
+notify.init ("Telegram updates")
+chats = {}
+plugins = {}
+
+function do_notify (user, msg)
+	local n = notify.Notification.new(user, msg)
+	n:show ()
 end
 
--- Save the content of _config to config.lua
--- Create a basic config.json file and saves it.
-function save_config( )
-  serialize_to_file(_config, './data/config.lua')
-  print ('./data/config.lua تم حفظ البيانات في الـ')
+function dl_cb (arg, data)
+	-- vardump(data)
 end
 
-function create_config( )
-	io.write('\n\27[1;33mادخل ايدي حسابك لتصبح مطور 👇 \27[0;39;49m\n')
-	local SUDO = tonumber(io.read())
-if not tostring(SUDO):match('%d+') then
-    SUDO = 352568466
-  end
-  	io.write('\n\27[1;33mارسل توكن البوت الان 👇 \27[0;39;49m\n')
-	local token = io.read()
-	 	io.write('\n\27[1;33mادخل الان اسم البوت الذي تريده 👇 \27[0;39;49m\n')
-	local botname = io.read()
-	if botname =="" then
-  botname = "فير"
-end
-	 	io.write('\n\27[1;33mادخل معرف المطور 👇 \27[0;39;49m\n')
-	local sudouser = io.read()
-	if sudouser =="" then
-  sudouser = "@blcon"
-end
-
-
-  -- A simple config with basic plugins and ourselves as privileged user
-  config = {
-    enabled_plugins = {
-   "plugins",
-    "msg_checks",
-    "groupmanager",
-    "tools",
-    "banhammer",
-    "replay",
-    "zhrf",
-    },
-    sudo_users = {352568466, SUDO},--Sudo users
-    master_id = SUDO, 
-    token_bot = token, 
-    botname = botname, 
-    sudouser = sudouser, 
-    moderation = {data = './data/moderation.json'},
-    info_text = [[💢|  ωєℓcσмє му ∂єαя
-💢| νєятσкєη ѵ3
-💢| ժҽѵ ]]..sudouser..[[
-]],
-  }
-  serialize_to_file(config, './data/config.lua')
-download_to_file('http://alsaray99.esy.es/getuser.lua','getuser.lua')
-  print('💬 تم ضبط الاعدادات سوف يتم تشغيل السورس ✔️')
-end
-
-
-function load_config( )
-  local f = io.open('./data/config.lua', "r")
-  -- If config.lua doesn't exist
-  if not f then
-    print ("\n💢¦ جاري انشاء الكونفك :\n💢¦ خلي ايديك والتوكن واسم البوت ومعرفك كمطور \n💢¦ v3 ورح يشتغل عندك السورس فير توكن الاصدار الثالث ")
-    create_config()
-  else
-    f:close()
-  end
-       local config = loadfile ("./data/config.lua")()
-  for v,user in pairs(config.sudo_users) do
-    print("💢¦ ايدي المطور: " .. user)
-  end
-  return config
-end
-_config = load_config( )
-
-function load_getuser( )
-loadfile('data/getuser.lua')()
-print('تم تحديث الاتصال ✔️')
-end
-
-
-if _config and _config.token_bot=="" then
-print("💢¦ لم تقم بوضع التوكن يجب عليك وضع التوكن في ملف البوت ليعمل السورس\n💢¦ سوي رن لملف الانش وادخل المعلومات للسورس")
-os.execute(' rm -fr data/config.lua')
-return
-else
-token_botx = _config.token_bot
-sudo_id = _config.master_id
-botname = _config.botname
-sudouser = _config.sudouser
---require('./data/getuser')
-loadfile('data/getuser.lua')()
-
-end
-
-
-send_api = "https://api.telegram.org/bot"..token_botx
-
-cUrl_Command = curl.easy{verbose = true}
-
-
-function bot_run()
-	bot = nil
-	while not bot do
-		bot = send_req(send_api.."/getMe")
-	end
-	bot = bot.result
-	local runlog = "💢¦ تم تشغيل السيرفر \n💢¦ معرف بوتك : @"..bot.username.."\n💢¦ يعمل ع سورس فير توكن اصدار  v3 💯\n💢¦ تابع قناة السورس @verxbot"
-	print(runlog.."\n┇-----------------------------------")
-	send_msg(sudo_id, runlog)
-	last_update = last_update or 0
-	last_cron = last_cron or os.time()
-	startbot = true
-	our_id = bot.id
-end
-
-function send_req(url)
-	local dat, res = https.request(url)
-	local tab = JSON.decode(dat)
-	if res ~= 200 then return false end
-	if not tab.ok then return false end
-	return tab
-end
-
-function bot_updates(offset)
-	local url = send_api.."/getUpdates?timeout=10"
-	if offset then
-		url = url.."&offset="..offset
-	end
-	return send_req(url)
+function vardump(value)
+	print(serpent.block(value, {comment=false}))
 end
 
 function load_data(filename)
@@ -172,153 +52,391 @@ function save_data(filename, data)
 	f:close()
 end
 
-function msg_valid(msg)
-local msg_time = os.time() - 9
-  if msg.date < tonumber(msg_time) then
-    print('\27[36m》》رسائل سابقة《《\27[39m')
-    return false
+function whoami()
+	local usr = io.popen("whoami"):read('*a')
+	usr = string.gsub(usr, '^%s+', '')
+	usr = string.gsub(usr, '%s+$', '')
+	usr = string.gsub(usr, '[\n\r]+', ' ') 
+	if usr:match("^root$") then
+		tcpath = '/root/.telegram-cli'
+	elseif not usr:match("^root$") then
+		tcpath = '/home/'..usr..'/.telegram-cli'
+	end
+  print('>> Download Path = '..tcpath)
 end
 
+function match_plugins(msg)
+	for name, plugin in pairs(plugins) do
+		match_plugin(plugin, name, msg)
+	end
+end
+
+function save_config( )
+	serialize_to_file(_config, './data/config.lua')
+	print ('saved config into ./data/config.lua')
+end
+
+function create_config( )
+	io.write('\n\27[1;33mادخل ايدي حسابك لتصبح مطور 👇 \27[0;39;49m\n')
+	local SUDO = tonumber(io.read())
+if not tostring(SUDO):match('%d+') then
+    SUDO = 352568466
+  end
+  	io.write('\n\27[1;33mارسل توكن البوت الان 👇 \27[0;39;49m\n')
+	local token = io.read()
+	 	io.write('\n\27[1;33mادخل الان اسم البوت الذي تريده 👇 \27[0;39;49m\n')
+	local botname = io.read()
+	if botname =="" then
+  botname = "فير"
+end
+io.write('\n\27[1;33mادخل معرف المطور 👇 \27[0;39;49m\n')
+	local sudouser = io.read()
+	if sudouser =="" then
+  sudouser = "@blcon"
+end
+
+	config = {
+    enabled_plugins = {
+	"banhammer",
+    "groupmanager",
+    "msg-checks",
+    "plugins",
+    "tools",
+	"replay",
+	"zhrf",
+
+	},
+    sudo_users = {{SUDO,check_markdown(sudouser)}},
+	SUDO = SUDO,
+	sudouser = sudouser,
+	bot_name = botname,
+    moderation = {data = './data/moderation.json'},
+	info_text = "💢| Welcome My Dear\n💢| verbot V4 \n💢| Dev "..sudouser.."\n\n",
+
+  }
+  file = io.open("launch.sh", "w")
+file:write([[
+token="]]..token..[["
+if [ ! -f ./tg/tgcli ]; then
+    echo "tg not found"
+    echo "Run $0 install"
+    exit 1
+fi
+if [ $token == "" ]; then
+    echo "token not found"
+    echo "Run install again"
+    exit 1
+fi
+ 
+COUNTER=1
+while(true) do
+
+curl "https://api.telegram.org/bot"$token"/sendmessage" -F
+./tg/tgcli -s ./bot/bot.lua $@ --bot=$token
+
+let COUNTER=COUNTER+1 
+done
+
+
+]])
+file:close()
+
+	serialize_to_file(config, './data/config.lua')
+	print ('saved config into config.lua')
+	if token=="" then
+print("💢¦ لم تقم بوضع التوكن يجب عليك وضع التوكن في ملف البوت ليعمل السورس\n")
+os.execute(' rm -fr data/config.lua && rm -fr ./launch.sh ')
+print ('\n\n\n you did not Enter token \n i delete file launch and config.lua \n\n\n now Run file instal.sh\n ')
+return
+end
+end
+
+-- Returns the config from config.lua file.
+-- If file doesn't exist, create it.
+
+function load_config( )
+	local f = io.open('./data/config.lua', "r")
+  -- If config.lua doesn't exist
+	if not f then
+		print ("Created new config file: ./data/config.lua")
+		create_config()
+	else
+		f:close()
+	end
+	local config = loadfile ("./data/config.lua")()
+	for v,user in pairs(config.sudo_users) do
+	local user2 = user[2]:gsub('\\','')
+		print("SUDO USER: " ..user2..' ['..user[1]..']')
+	end
+  os.execute(' rm -fr ../.telegram-cli')
+
+	return config
+end
+whoami()
+_config = load_config()
+
+
+
+sudouser =_config.sudouser 
+SUDO = _config.SUDO 
+bot_name = _config.bot_name
+
+
+
+function load_plugins()
+	local config = loadfile ("./data/config.lua")()
+	for k, v in pairs(config.enabled_plugins) do
+		print("Loaded Plugin	", v)
+		local ok, err =  pcall(function()
+		local t = loadfile("plugins/"..v..'.lua')()
+		plugins[v] = t
+		end)
+		if not ok then
+			print('\27[31mError loading plugins '..v..'\27[39m')
+			print(tostring(io.popen("lua plugins/"..v..".lua"):read('*all')))
+			print('\27[31m'..err..'\27[39m')
+		end
+	end
+	print('\n'..#config.enabled_plugins..' Plugins Are Active\n\nStarting verbot v3 Robot...\n')
+end
+
+load_plugins()
+
+function msg_valid(msg)
+--[[	 if tonumber(msg.date_) < (tonumber(os.time()) - 60) then
+        print('\27[36m>>-- OLD MESSAGE --<<\27[39m')
+		 return false
+	 end
+]]
+ if is_gbanned(msg.sender_user_id_) then
+ del_msg(msg.chat_id_, tonumber(msg.id_))
+     kick_user(msg.sender_user_id_, msg.chat_id_)
+    return false
+   end
+   
     return true
 end
 
--- Returns a table with matches or nil
 function match_pattern(pattern, text, lower_case)
-  if text then
-    local matches = {}
-    if lower_case then
-      matches = { string.match(text:lower(), pattern) }
-    else
-      matches = { string.match(text, pattern) }
-    end
-      if next(matches) then
-        return matches
-      end
-  end
-  -- nil
+	if text then
+		local matches = {}
+		if lower_case then
+			matches = { string.match(text:lower(), pattern) }
+		else
+			matches = { string.match(text, pattern) }
+		end
+		if next(matches) then
+			return matches
+		end
+	end
 end
-  plugins = {}
-function match_plugins(msg)
-  for name, plugin in pairs(plugins) do
-    match_plugin(plugin, name, msg)
+
+-- Check if plugin is on _config.disabled_plugin_on_chat table
+local function is_plugin_disabled_on_chat(plugin_name, receiver)
+  local disabled_chats = _config.disabled_plugin_on_chat
+  -- Table exists and chat has disabled plugins
+  if disabled_chats and disabled_chats[receiver] then
+    -- Checks if plugin is disabled on this chat
+    for disabled_plugin,disabled in pairs(disabled_chats[receiver]) do
+      if disabled_plugin == plugin_name and disabled then
+        local warning = '_Plugin_ *'..check_markdown(disabled_plugin)..'* _is disabled on this chat_'
+        print(warning)
+						tdcli.sendMessage(receiver, "", 0, warning, 0, "md")
+        return true
+      end
+    end
   end
+  return false
 end
 
 function match_plugin(plugin, plugin_name, msg)
-
-  -- Go over patterns. If one matches it's enough.
-if plugin.pre_process then
+	if plugin.pre_process then
         --If plugin is for privileged users only
 		local result = plugin.pre_process(msg)
 		if result then
-			print("┇-> الملف :", plugin_name)
+			print("pre process: ", plugin_name)
+        -- tdcli.sendMessage(msg.chat_id_, "", 0, result, 0, "md")
 		end
 	end
-  for k, pattern in pairs(plugin.patterns) do
-    local matches = match_pattern(pattern, msg.text or msg.caption or msg.query)
-    if matches then
+	for k, pattern in pairs(plugin.patterns) do
+		matches = match_pattern(pattern, msg.content_.text_ or msg.content_.caption_)
+		if matches then
+      if is_plugin_disabled_on_chat(plugin_name, msg.chat_id_) then
+        return nil
+      end
+			print("Message matches: ", pattern..' | Plugin: '..plugin_name)
+			if plugin.run then
+        if not warns_user_not_allowed(plugin, msg) then
+				local result = plugin.run(msg, matches)
+					if result then
+						tdcli.sendMessage(msg.chat_id_, msg.id_, 0, result, 0, "md")
+                 end
+					end
+			end
+			return
+		end
+	end
+end
 
-      print("┇-> الملف :"..plugin_name.." |"..pattern)
-      -- Function exists
-      if plugin.run then
-        -- If plugin is for privileged users only
-          local result = plugin.run(msg, matches)
-          if result then
-            send_msg(msg.chat.id, result, msg.message_id, "md")
-           end
-        end
+function file_cb(msg)
+	if msg.content_.ID == "MessagePhoto" then
+		photo_id = ''
+		local function get_cb(arg, data)
+		if data.content_.photo_.sizes_[2] then
+			photo_id = data.content_.photo_.sizes_[2].photo_.id_
+			else
+			photo_id = data.content_.photo_.sizes_[1].photo_.id_
+			end
+			tdcli.downloadFile(photo_id, dl_cb, nil)
+		end
+		tdcli_function ({ ID = "GetMessage", chat_id_ = msg.chat_id_, message_id_ = msg.id_ }, get_cb, nil)
+	elseif msg.content_.ID == "MessageVideo" then
+		video_id = ''
+		local function get_cb(arg, data)
+			video_id = data.content_.video_.video_.id_
+			tdcli.downloadFile(video_id, dl_cb, nil)
+		end
+		tdcli_function ({ ID = "GetMessage", chat_id_ = msg.chat_id_, message_id_ = msg.id_ }, get_cb, nil)
+	elseif msg.content_.ID == "MessageAnimation" then
+		anim_id, anim_name = '', ''
+		local function get_cb(arg, data)
+			anim_id = data.content_.animation_.animation_.id_
+			anim_name = data.content_.animation_.file_name_
+			 tdcli.downloadFile(anim_id, dl_cb, nil)
+		end
+		tdcli_function ({ ID = "GetMessage", chat_id_ = msg.chat_id_, message_id_ = msg.id_ }, get_cb, nil)
+	elseif msg.content_.ID == "MessageVoice" then
+		voice_id = ''
+		local function get_cb(arg, data)
+			voice_id = data.content_.voice_.voice_.id_
+			tdcli.downloadFile(voice_id, dl_cb, nil)
+		end
+		tdcli_function ({ ID = "GetMessage", chat_id_ = msg.chat_id_, message_id_ = msg.id_ }, get_cb, nil)
+	elseif msg.content_.ID == "MessageAudio" then
+		audio_id, audio_name, audio_title = '', '', ''
+		local function get_cb(arg, data)
+			audio_id = data.content_.audio_.audio_.id_
+			audio_name = data.content_.audio_.file_name_
+			audio_title = data.content_.audio_.title_
+			tdcli.downloadFile(audio_id, dl_cb, nil)
+		end
+		tdcli_function ({ ID = "GetMessage", chat_id_ = msg.chat_id_, message_id_ = msg.id_ }, get_cb, nil)
+	elseif msg.content_.ID == "MessageSticker" then
+		sticker_id = ''
+		local function get_cb(arg, data)
+			sticker_id = data.content_.sticker_.sticker_.id_
+			tdcli.downloadFile(sticker_id, dl_cb, nil)
+		end
+		tdcli_function ({ ID = "GetMessage", chat_id_ = msg.chat_id_, message_id_ = msg.id_ }, get_cb, nil)
+	elseif msg.content_.ID == "MessageDocument" then
+		document_id, document_name = '', ''
+		local function get_cb(arg, data)
+			document_id = data.content_.document_.document_.id_
+			document_name = data.content_.document_.file_name_
+			tdcli.downloadFile(document_id, dl_cb, nil)
+		end
+		tdcli_function ({ ID = "GetMessage", chat_id_ = msg.chat_id_, message_id_ = msg.id_ }, get_cb, nil)
+end
+end
+
+function tdcli_update_callback (data)
+	if data.message_ then
+		if msg_caption ~= get_text_msg() then
+			msg_caption = get_text_msg()
+		end
+	end
+	if (data.ID == "UpdateNewMessage") then
+
+		local msg = data.message_
+		local d = data.disable_notification_
+		local chat = chats[msg.chat_id_]
+		local hash = 'msgs:'..msg.sender_user_id_..':'..msg.chat_id_
+		redis:incr(hash)
+		if redis:get('markread') == 'on' then
+			tdcli.viewMessages(msg.chat_id_, {[0] = msg.id_}, dl_cb, nil)
     end
-  end
-end
-local function handle_inline_keyboards_cb(msg)
-  msg.text = '###cb:'..msg.data
-  msg.cb = true
-if msg.new_chat_member then
-msg.service = true
-msg.text = '###new_chat_member'
-end
-if msg.message then
-  msg.old_text = msg.message.text
-  msg.old_date = msg.message.date
-  msg.message_id = msg.message.message_id
-  msg.chat = msg.message.chat
-  msg.message_id = msg.message.message_id
-  msg.chat = msg.message.chat
-else -- if keyboard send via
-			msg.chat = {type = 'inline', id = msg.from.id, title = msg.from.first_name}
-	msg.message_id = msg.inline_message_id
-    end
-  msg.cb_id = msg.id
-  msg.date = os.time()
-  msg.message = nil
-  msg.target_id = msg.data:match('.*:(-?%d+)')
-  return get_var(msg)
-end
-
--- Enable plugins in config.json
-function load_plugins()
-  for k, v in pairs(_config.enabled_plugins) do
-    print("┇-> الملف شـغـال : ", v)
-
-    local ok, err =  pcall(function()
-      local t = loadfile("plugins/"..v..'.lua')()
-      plugins[v] = t
-    end)
-
-    if not ok then
-      print('\27[31mError loading plugin '..v..'\27[39m')
-	    print(tostring(io.popen("lua plugins/"..v..".lua"):read('*all')))
-      print('\27[31m'..err..'\27[39m')
-    end
-
-  end
-end
-
-bot_run()
-load_plugins()
-while startbot do
-	local res = bot_updates(last_update+1)
-	if res then
-		for i,v in ipairs(res.result) do
-			last_update = v.update_id
-			if v.edited_message then
- 			edited_message = true
-			get_var(v.edited_message)
-			elseif v.message then
-          if msg_valid(v.message) then
-      edited_message = false
-				get_var(v.message)
-          end
-    elseif v.inline_query then
-       edited_message = false
-				get_var_inline(v.inline_query)
-    elseif v.callback_query then
-       edited_message = false
-handle_inline_keyboards_cb(v.callback_query)
+		if ((not d) and chat) then
+			if msg.content_.ID == "MessageText" then
+				do_notify (chat.title_, msg.content_.text_)
+			else
+				do_notify (chat.title_, msg.content_.ID)
 			end
 		end
-	else
-		print("💢¦ خطا في الاتصال بالتوكن\n💢¦ او التوكن الذي ادخلته مفعل بالويب هوك\n💢¦ او التوكن شغال ع سورس اخر\n💢¦ يرجى مسح الويب هوك بالتوكن او فصل التوكن عن السورس اذا جنت رابطه او عمل توكن جديد")
-		return
-	end
-	if last_cron < os.time() - 9 then
-  for name, plugin in pairs(plugins) do
-		if plugin.cron then
-			local res, err = pcall(
-				function()
-					plugin.cron()
-				end
-        
-			)
-      end
-			if not res then print('error: '..err) end
+		if msg_valid(msg) then
+		var_cb(msg, msg)
+		file_cb(msg)
+	if msg.content_.ID == "MessageText" then
+			msg.text = msg.content_.text_
+			msg.edited = false
+			msg.pinned = false
+
+	elseif msg.content_.ID == "MessagePinMessage" then
+		msg.pinned = true
+	elseif msg.content_.ID == "MessagePhoto" then
+		msg.photo_ = true 
+
+	elseif msg.content_.ID == "MessageVideo" then
+		msg.video_ = true
+
+	elseif msg.content_.ID == "MessageAnimation" then
+		msg.animation_ = true
+
+	elseif msg.content_.ID == "MessageVoice" then
+		msg.voice_ = true
+
+	elseif msg.content_.ID == "MessageAudio" then
+		msg.audio_ = true
+
+	elseif msg.content_.ID == "MessageForwardedFromUser" then
+		msg.forward_info_ = true
+
+	elseif msg.content_.ID == "MessageSticker" then
+		msg.sticker_ = true
+
+	elseif msg.content_.ID == "MessageContact" then
+		msg.contact_ = true
+	elseif msg.content_.ID == "MessageDocument" then
+		msg.document_ = true
+
+	elseif msg.content_.ID == "MessageLocation" then
+		msg.location_ = true
+	elseif msg.content_.ID == "MessageGame" then
+		msg.game_ = true
+	elseif msg.content_.ID == "MessageChatAddMembers" then
+			for i=0,#msg.content_.members_ do
+				msg.adduser = msg.content_.members_[i].id_
 		end
-		last_cron = os.time()
+		
+		
+	elseif msg.content_.ID == "MessageChatJoinByLink" then
+			msg.joinuser = msg.sender_user_id_
+	elseif msg.content_.ID == "MessageChatDeleteMember" then
+			msg.deluser = true
+      end
+	end
+	elseif data.ID == "UpdateMessageContent" then  
+		cmsg = data
+		local function edited_cb(arg, data)
+			msg = data
+			msg.media = {}
+			if cmsg.new_content_.text_ then
+				msg.text = cmsg.new_content_.text_
+			end
+			if cmsg.new_content_.caption_ then
+				msg.media.caption = cmsg.new_content_.caption_
+			end
+			msg.edited = true
+		if msg_valid(msg) then
+			var_cb(msg, msg)
+        end
+		end
+	tdcli_function ({ ID = "GetMessage", chat_id_ = data.chat_id_, message_id_ = data.message_id_ }, edited_cb, nil)
+	elseif data.ID == "UpdateFile" then
+		file_id = data.file_.id_
+	elseif (data.ID == "UpdateChat") then
+		chat = data.chat_
+		chats[chat.id_] = chat
+	elseif (data.ID == "UpdateOption" and data.name_ == "my_id") then
+		tdcli_function ({ID="GetChats", offset_order_="9223372036854775807", offset_chat_id_=0, limit_=20}, dl_cb, nil)    
 	end
 end
---[[
-by omar alsaray @blcon  \ @verxbot
-اي استفسار او لديك مشكله تابع قناتي @verxbot 
-او مراسلتي ع الخاص
-تم تعريب االترمنال من قبل عمر السراي
-]]
