@@ -1,89 +1,121 @@
---[[
-by omar alsaray @blcon  \ @verxbot
-اي استفسار او لديك مشكله تابع قناتي @verxbot 
-او مراسلتي ع الخاص
-تم تعريب االترمنال من قبل عمر السراي
-ملف الردود + اضافه الرد
-من برمجتي وكتابتي
-]]
 do 
 local function run(msg, matches) 
 
+if is_silent_user(msg.from.id, msg.to.id) then return end
 
 local w = matches[1]
 local ww = matches[2]
 local r3 = matches[3]
 local r4 = matches[4]
-local name_user = string.sub(msg.from.first_name:lower(),0,60) 
-local data = load_data(_config.moderation.data)
+ data = load_data(_config.moderation.data)
 if msg.from.username then
-usernamex = "@"..(msg.from.username or "---")
+usernamex = "@"..(check_markdown(msg.from.username) or "---")
 else
 usernamex = "️ ما مسوي  😹💔 "
 end
 
-if matches[1] == botname..' غادر' and is_sudo(msg) and msg.to.type == "supergroup" or msg.to.type == "group" then
-send_msg(msg.to.id,"💢¦ تم حذف بيانات المجموعة \n💢¦  سوف اغادر باي 👋🏿" )
-botrem(msg)
-end
---------------------[Test Bot]----------------------------
-if w =="تيست" then
-return "💯 البوت شـغــال 🚀"
-elseif w == "اسمي" then
-return  "\n" ..msg.from.first_name.."\n" 
-elseif w == "معرفي" then
-return  usernamex
-elseif w == "رقمي" then
-return  "\n"..(msg.from.phone or "لايوجد").."\n" 
-elseif w == "ايديي" then
-return  "\n"..msg.from.id.."\n" 
-elseif w =="صورتي" then
-local status = getUserProfilePhotos(msg.from.id, 0, 0)
-if status.result.total_count ~= 0 then
-	sendPhotoById(msg.to.id, status.result.photos[1][1].file_id, msg.id, '')
-else
-return '💢¦لا توجد صورة في بروفايلك !!! '
-end
-elseif w=="اريد رابط الحذف" or w=="اريد رابط حذف" or w=="رابط حذف" or w=="رابط الحذف" then
-return [[
-💢¦ رابط حذف حـساب التيليگرام ↯
-💢¦ لتتندم فڪر قبل ڪلشي ❤️
-💢¦ بالتـوفيـق عزيزي ...
-
-💢¦ـ  https://telegram.org/deactivate
-]]  
-elseif w== 'ايدي' and msg.to.type == 'private' then
-local iid = "💢¦ ايدي البوت :` "..our_id.. "`\n💢¦ ايدي حسابك :` "..msg.from.id.. "`\n💢¦ قناة الـسـورس : @verxbot\n💢¦ مطور الـسـورس :\n💢¦ عمر الــســراي  > @blcon\n 💯"
-send_msg(msg.from.id, iid,nil,'md')
-
-end
-------------[lock and unlock reply in pv ]---------
-    
-if(msg.to.type == "private") then
-if w and msg.reply_to_message and msg.reply.fwd_from and is_sudo(msg) then
-send_msg(msg.reply.fwd_from.id,w)
-send_msg(msg.from.id,'💬| تم ارسال رسالتك ✔️ ')
-
-elseif not is_sudo(msg) and msg.from.id ~= our_id and w~="/start"  then
-fwd_msg(sudo_id,msg.from.id,msg.id)
-send_msg(msg.from.id,'💢¦ تم ارسال رسالتك ✔️ \n💢¦ سوف يرد عليك المطور في اقرب وقت 🔜\n',msg.id)
-end
-end
-    
-if not (data[tostring(msg.to.id)] or is_silent_user(msg.from.id, msg.to.id)) then return end
-
 --------------[data function to save rdod ]---------------
 if data[tostring(msg.to.id)] then
-local settings = data[tostring(msg.to.id)]['settings'] 
+if data[tostring(msg.to.id)]['settings'] then
+settings = data[tostring(msg.to.id)]['settings'] 
 if data[tostring(msg.to.id)]['settings']['replay'] then
- lock_reply = data[tostring(msg.to.id)]['settings']['replay'] 
-end end
+lock_reply = data[tostring(msg.to.id)]['settings']['replay']  
+elseif not data[tostring(msg.to.id)]['settings']['replay'] then
+lock_reply = "🚫"
+end end end
+---------------[bot out]---------------------------
 
+if w==bot_name..' غادر' and is_sudo(msg) then
+tdcli.sendMessage(msg.to.id, msg.id, 1, 'اوك باي 😢💔💯', 1, 'html')
+botrem(msg)
+end   
+-------[/start and welcom and save user id ]-----------
+if w=="المشتركين" and is_sudo(msg) and msg.to.type == 'pv'  then
+  local users = '💢¦ عدد المشتركين  `'..redis:scard('users')..'` *مشترك في البوت *🍃'
+return users
+end
+
+if w=="/start" and msg.to.type == 'pv'  then
+ redis:sadd('users',msg.from.id)
+return [[💢¦ مٌرَحُبّاً انَا بّوَتْ اسِمٌيَ ]]..bot_name..[[ 🎖
+💢¦ اٌختْصّاصّيَ حُمٌايَةِ كِرَوَبّاتْ
+💢¦ مٌنَ الُسِبّامٌ وَالُوَسِائطِ وَالُتْكِرَارَ وَالٌُخ...
+💢¦ فقط المطور يفعل البوت
+💢¦ مطور البوت : ]]..sudouser..[[
+
+👨🏽‍🔧]]
+end
+if (msg.to.type == "pv") and not is_sudo(msg) then
+tdcli.sendMessage(msg.to.id, 0, 1, "💢¦ تم ارسال رسالتك الى المطور\n💢¦ـ "..sudouser.."\n💢¦ سوف ارد عليك في اقرب وقت\n👨🏻‍🔧", 1, '')
+tdcli.forwardMessages(SUDO,msg.to.id, {[0] = msg.id}, 0)
+
+end
+
+
+if (msg.to.type == "pv") and msg.reply_id  then
+
+tdcli.sendForwarded(msg.to.id, 0, 0, 1, nil, msg.from.id, msg.reply_id)
+end
 ---------------[End Function data] -----------------------
- if w=="رد" then
-     
-if ww == 'مسح الكل' then
-  if not is_owner(msg) then return"♨️ للمدراء فقط ! 💯" end
+if w=="اضف رد" then
+if not is_owner(msg) then return"♨️ للمدراء فقط ! 💯" end
+redis:set('addrd:'..msg.from.id, true)
+redis:del("replay1")
+redis:del("replay2")
+redis:del('addrd2:'..msg.from.id)
+return "📭¦ _حسننا الان ارسل كلمة الرد _🍃\n"
+end
+
+if w=="اضف رد للكل" then
+if tonumber(msg.from.id) ~= tonumber(SUDO) then return "☔️هذا الاوامر للمطور الاساسي فقط 🌑" end
+redis:set('addrdall:'..msg.from.id, true)
+redis:del("allreplay1")
+redis:del("allrepaly2")
+redis:del('addrdall2:'..msg.from.id)
+return "📭¦ _حسننا الان ارسل كلمة الرد العام _🍃\n"
+end
+
+if msg.text then
+
+if redis:get('addrdall:'..msg.from.id) and is_owner(msg) then
+if  not redis:get('allreplay1') then
+redis:set('allreplay1',msg.text)
+redis:set('addrdall2:'..msg.from.id,true)
+return "💢¦ _شكرأ لك 😻_\n💢¦ _الان ارسل جواب الرد _✔️" 
+end
+if redis:get('addrdall2:'..msg.from.id) then
+  redis:set('allrepaly2',msg.text)
+ if not data['replay_all'] then
+    data['replay_all'] = {}
+    save_data(_config.moderation.data, data)
+    end
+data['replay_all'][redis:get("allreplay1")] = redis:get("allrepaly2")
+save_data(_config.moderation.data, data)
+redis:del('addrdall:'..msg.from.id)
+return '('..check_markdown(redis:get('allreplay1'))..')\n  ✔️ تم اضافت الرد لكل المجموعات 🚀 '
+end
+end
+
+if redis:get('addrd:'..msg.from.id) and is_owner(msg) then
+if  not redis:get('replay1') then
+redis:set('replay1',msg.text)
+redis:set('addrd2'..msg.from.id,true)
+return "💢¦ _شكرأ لك 😻_\n💢¦ _الان ارسل جواب الرد _✔️" 
+end
+if redis:get('addrd2'..msg.from.id) then
+  redis:set('replay2',msg.text)
+data[tostring(msg.to.id)]['replay'][redis:get("replay1")] = redis:get("replay2")
+save_data(_config.moderation.data, data)
+redis:del('addrd:'..msg.from.id)
+return '('..check_markdown(redis:get('replay1'))..')\n  ✔️ تم اضافت الرد 🚀 '
+end
+end
+end
+
+
+if w == 'مسح الردود' then
+if not is_owner(msg) then return"♨️ للمدراء فقط ! 💯" end
+
 if next(data[tostring(msg.to.id)]['replay']) == nil then
 return  " عذراً 🌝".. ":{" ..msg.from.first_name.. "}:".."\n".."\n".." 🗯قائمة الردود فارغة بالفعل 💯 "
 else
@@ -91,59 +123,147 @@ for k,v in pairs(data[tostring(msg.to.id)]['replay']) do
 data[tostring(msg.to.id)]['replay'][tostring(k)] = nil
 save_data(_config.moderation.data, data)
 end
-    return "✔️ تم مسح كل الردود 🚀"
+return "✔️ تم مسح كل الردود 🚀"
 end
 end
 
-  if ww == 'اضف' then
-    if not is_owner(msg) then return"♨️ للمدراء فقط ! 💯" end
- data[tostring(msg.to.id)]['replay'][r3] = r4
+if w == 'مسح الردود العامه' then
+if not is_owner(msg) then return"♨️ للمدراء فقط ! 💯" end
+
+if next(data['replay_all']) == nil then
+return  " عذراً 🌝".. ":{" ..msg.from.first_name.. "}:".."\n".."\n".." 🗯قائمة الردود العامه فارغة بالفعل 💯 "
+else
+for k,v in pairs(data['replay_all']) do
+data['replay_all'][tostring(k)] = nil
 save_data(_config.moderation.data, data)
- return '('..r3..')\n  ✔️ تم اضافت الرد 🚀 '
- 
-elseif ww == 'مسح' then
-  if not is_owner(msg) then return"♨️ للمدراء فقط ! 💯" end
-if not data[tostring(msg.to.id)]['replay'][r3] then
+end
+return "✔️ تم مسح كل الردود العامه🚀"
+end
+end
+
+if w == 'مسح رد عام' then
+if not is_owner(msg) then return"♨️ للمدراء فقط ! 💯" end
+
+if not data['replay_all'][ww] then
 return '🗯هذا الرد ليش مضاف في قائمه الردود 💯'
 else
-data[tostring(msg.to.id)]['replay'][r3] = nil
+data['replay_all'][ww] = nil
 save_data(_config.moderation.data, data)
-return '('..r3..')\n  ✔️ تم مسح الرد 🚀 '
-end
+return '('..check_markdown(ww)..')\n  ✔️ تم مسح الرد 🚀 '
 end
 end
 
-  if w == 'الردود' then
+if w == 'مسح رد' then
+if not is_owner(msg) then return"♨️ للمدراء فقط ! 💯" end
+
+if not data[tostring(msg.to.id)]['replay'][ww] then
+return '🗯هذا الرد ليش مضاف في قائمه الردود 💯'
+else
+data[tostring(msg.to.id)]['replay'][ww] = nil
+save_data(_config.moderation.data, data)
+return '('..check_markdown(ww)..')\n  ✔️ تم مسح الرد 🚀 '
+end
+end
+
+
+
+
+if w == 'الردود' then
 if next(data[tostring(msg.to.id)]['replay']) ==nil then
 return '♨️ لايوجد ردود مضافه حاليا ❗️'
 else
 local i = 1
-local message = '💢 ردود البوت في المجموعه  💯\n\n'
+local message = '💢 الردود البوت في المجموعه  💯\n\n'
 for k,v in pairs(data[tostring(msg.to.id)]['replay']) do
-message = message ..i..' - '..k..' [[' ..v.. ']] \n'
+message = message ..i..' - ('..check_markdown(k)..') \n'
 i = i + 1
 end
 return message
 end
 
-  end
-  
+end
+if w == 'الردود العامه' then
+if next(data['replay_all']) ==nil then
+return '♨️ لايوجد ردود مضافه حاليا ❗️'
+else
+local i = 1
+local message = '💢 الردود العامه في البوت  💯\n\n'
+for k,v in pairs(data['replay_all']) do
+message = message ..i..' - ('..check_markdown(k)..') \n'
+i = i + 1
+end
+return message
+end
+
+end
+
 -- by @alsaray
 
 
+--------------------[Test Bot]----------------------------
+if w =="تيست" then
+return "💯 البوت شـغــال 🚀"
+elseif w == "اسمي" then
+return  "\n" ..msg.from.first_name.."\n" 
+elseif w == "معرفي" then
+return  "@"..(check_markdown(msg.from.username) or "لايوجد").."\n" 
+elseif w == "ايديي" then
+return  "\n"..msg.from.id.."\n" 
+elseif w =="صورتي" then
+local function getpro(arg, data)
+if data.photos_[0] then
+local rank
+if is_sudo(msg) then
+rank = 'المطور مالتي 😻'
+elseif is_owner(msg) then
+rank = 'مدير المجموعه 😽'
+elseif is_mod(msg) then
+rank = ' ادمن في البوت 😺'
+elseif is_whitelist(msg.from.id,msg.to.id)  then
+rank = 'عضو مميز 🎖'
+else
+rank = 'مجرد عضو 😹'
+end
+tdcli.sendPhoto(msg.chat_id_, msg.id_, 0, 1, nil, data.photos_[0].sizes_[1].photo_.persistent_id_,"",dl_cb,nil)
+else
+tdcli.sendMessage(msg.to.id, msg.id_, 1, "💢¦لا يوجد صوره في بروفايلك ...", 1, 'md')
+end end
+tdcli_function ({ID = "GetUserProfilePhotos",user_id_ = msg.from.id,offset_ = 0,limit_ = 1}, getpro, nil)
+elseif w=="اريد رابط الحذف" or w=="اريد رابط حذف" or w=="رابط حذف" or w=="رابط الحذف" then
+return [[
+¦ رابط حذف حـساب التيليگرام ↯
+¦ لتتندم فڪر قبل ڪلشي 
+¦ بالتـوفيـق عزيزي ...
+¦ـ  https://telegram.org/deactivate
+]] 
+elseif w=="رتبتي" then
+local rank
+if is_sudo(msg) then
+rank = 'المطور مالتي 😻'
+elseif is_owner(msg) then
+rank = 'مدير المجموعه 😽'
+elseif is_mod(msg) then
+rank = ' ادمن في البوت 😺'
+elseif is_whitelist(msg.from.id,msg.to.id) then
+rank = 'عضو مميز 🎖'
+else
+rank = 'مجرد عضو 😹'
+end
+return '💢¦ رتبتك : '..rank
+end
+------------[lock and unlock reply in pv ]---------
 
---------------------------------------
 
-if lock_reply =="yes" and  data[tostring(msg.to.id)] then
+if lock_reply =="✔️" and  data[tostring(msg.to.id)]    then
 
-if  msg.to.type == "supergroup" or msg.to.type == "group" then
+if ( msg.text ) and ( msg.to.type == "channel" ) or ( msg.to.type == "chat" ) then
 ----------------------
 -- by @alsaray
 local su = {
 "نعم حبيبي المطور 🌝❤",
-"يابعد روح "..botname.." 😘❤️",
+"يابعد روح "..bot_name.." 😘❤️",
 "هلا بمطوري العشق أمرني"
-  }
+}
 local  ss97 = {
 "ها حياتي😻",
 "عيونه 👀 وخشمه 👃🏻واذانه👂🏻",
@@ -157,17 +277,17 @@ local  ss97 = {
 "احجي بسرعه شتريد 😤",
 "ها يا كلبي ❤️",
 "هم صاحو عليه راح ابدل اسمي من وراكم 😡",
-"لك فداك "..botname.." حبيبي انت اموووح 💋",
+"لك فداك "..bot_name.." حبيبي انت اموووح 💋",
 "دا اشرب جاي تعال غير وكت 😌",
 "كول حبيبي أمرني 😍",
 "احجي فضني شرايد ولا اصير ضريف ودكلي جرايد لو مجلات تره بايخه 😒😏",
-"اشتعلو اهل "..botname.." شتريد 😠",
+"اشتعلو اهل "..bot_name.." شتريد 😠",
 "بووووووووو 👻 ها ها فزيت شفتك شفتك لا تحلف 😂",
 "طالع مموجود 😒",
 "هااا شنوو اكو حاته بالكروب وصحت عليه  😍💕",
 "انت مو قبل يومين غلطت عليه؟  😒",
-"راجع المكتب حبيبي عبالك "..botname.." سهل تحجي ويا 😒",
-"ياعيون "..botname.." أمرني 😍",
+"راجع المكتب حبيبي عبالك "..bot_name.." سهل تحجي ويا 😒",
+"ياعيون "..bot_name.." أمرني 😍",
 "لك دبدل ملابسي اطلع برااااا 😵😡 ناس متستحي",
 "سويت هواي شغلات سخيفه بحياتي بس عمري مصحت على واحد وكلتله انجب 😑",
 "مشغول ويا ضلعتي  ☺️",
@@ -215,37 +335,74 @@ local song = {
 "لا تظربني لا تظرب 💃💃 كسرت الخيزارانه💃🎋 صارلي سنه وست اشهر💃💃 من ظربتك وجعانه🤒😹",
 "موجوع كلبي😔والتعب بية☹️من اباوع على روحي😢ينكسر كلبي عليه😭",
 "ايامي وياها👫اتمنا انساها😔متندم اني حيل😞يم غيري هيه💃تضحك😂عليه😔مقهور انام الليل😢كاعد امسح بل رسائل✉️وجان اشوف كل رسايلها📩وبجيت هوايه😭شفت احبك😍واني من دونك اموت😱وشفت واحد 🚶صار هسه وياية👬اني رايدها عمر عمر تعرفني كل زين🙈 وماردت لا مصلحة ولاغايه😕والله مافد يوم بايسها💋خاف تطلع🗣البوسه💋وتجيها حجايه😔️",
- "😔صوتي بعد مت سمعه✋يال رايح بلا رجعة🚶بزودك نزلت الدمعة ذاك اليوم☝️يال حبيتلك ثاني✌روح وياه وضل عاني😞يوم اسود علية اني🌚 ذاك اليوم☝️تباها بروحك واضحك😂لان بجيتلي عيني😢😭 وافراح يابعد روحي😌خل الحركة تجويني😔🔥صوتي بعد متسمعة🗣✋",
- 
- 
+"😔صوتي بعد مت سمعه✋يال رايح بلا رجعة🚶بزودك نزلت الدمعة ذاك اليوم☝️يال حبيتلك ثاني✌روح وياه وضل عاني😞يوم اسود علية اني🌚 ذاك اليوم☝️تباها بروحك واضحك😂لان بجيتلي عيني😢😭 وافراح يابعد روحي😌خل الحركة تجويني😔🔥صوتي بعد متسمعة🗣✋",
+
+
 }
+-------reply By stickers -------
+
+local sound = {
+"data/audio/aml_mnk.ogg",
+"data/audio/mozeka.ogg"
+}
+local function sudoname(ww)
+if string.match(ww, 'عمر')  or  string.match(ww, 'عموش') or  string.match(ww, 'عموري') or  string.match(ww, 'عمور')  or string.match(ww, 'عمروش') then
+return true
+else
+return false
+end
+end
 
 ----------------------------------------------
-if is_sudo(msg) and w == botname and not ww then 
+if is_sudo(msg) and w == bot_name and not ww then 
 return  su[math.random(#su)]  
-elseif not is_sudo(msg) and w == botname and not ww then 
+elseif not is_sudo(msg) and w == bot_name and not ww then 
 return  ss97[math.random(#ss97)]  
 elseif w == "كول" and ww then
 if string.len(ww) > 60 then return "💢¦ ما اكدر اكول اكثر من 60 حرف 🙌🏾" end
- send_msg(msg.to.id, '<code>'..ww..'</code>', nil, 'html')
+if sudoname(ww) then return "📌 ما اكدر احجي عليه مستحيل 🕵🏻" end
+if ww:match("[Tt][Ee][Ll][Ee][Gg][Rr][Aa][Mm].[Mm][Ee]/") or ww:match("[Tt][Ee][Ll][Ee][Gg][Rr][Aa][Mm].[Dd][Oo][Gg]/") or ww:match("[Tt].[Mm][Ee]/") or ww:match("[Tt][Ll][Gg][Rr][Mm].[Mm][Ee]/") or ww:match(".[Pp][Ee]") or ww:match("[Hh][Tt][Tt][Pp][Ss]://") or ww:match("[Hh][Tt][Tt][Pp]://") or ww:match("[Ww][Ww][Ww].") or ww:match(".[Cc][Oo][Mm]") or ww:match("@") then
+return "انته لوتي عود ؟ هو اني نغل ههه يريدني انشر رابط او معرف 😪 " 
+end
+return tdcli.sendMessage(msg.to.id, 0, 1, '<code>'..ww..'</code>', 1, 'html')
 elseif w == "كله" and ww then
 if string.len(ww) > 60 then return "💢¦ ما اكدر اكله اكثر من 60 حرف 🙌🏾" end
-if msg.reply_id then
- send_msg(msg.to.id, '<code>'..ww..'</code>',msg.reply_id, 'html')
+if sudoname(ww) then return "📌 ما اكدر احجي عليه مستحيل 🕵🏻" end
+if ww:match("[Tt][Ee][Ll][Ee][Gg][Rr][Aa][Mm].[Mm][Ee]/") or ww:match("[Tt][Ee][Ll][Ee][Gg][Rr][Aa][Mm].[Dd][Oo][Gg]/") or ww:match("[Tt].[Mm][Ee]/") or ww:match("[Tt][Ll][Gg][Rr][Mm].[Mm][Ee]/") or ww:match(".[Pp][Ee]") or ww:match("[Hh][Tt][Tt][Pp][Ss]://") or ww:match("[Hh][Tt][Tt][Pp]://") or ww:match("[Ww][Ww][Ww].") or ww:match(".[Cc][Oo][Mm]") or ww:match("@") then
+return "انته لوتي عود ؟ هو اني نغل ههه يريدني انشر رابط او معرف 😪 " 
 end
-elseif w== botname and ww == "رزله" and r3 and is_sudo(msg) then
 if msg.reply_id then
-send_msg(msg.to.id, 'اوك سيدي 🌝🍃', msg.id, 'html')
-send_msg(msg.to.id, 'يا ول شو طالعة عينك😒 من البنات مو😪و هم صايرلك لسان تحجي😠اشو تعال👋👊صير حباب مرة ثانية ترةة ...😉و لا تخليني البسك عمامة و اتفل عليك😂️',msg.reply_id, 'html')
+return tdcli.sendMessage(msg.to.id, msg.reply_id, 1, '<code>'..ww..'</code>', 1, 'html')
+end
+elseif w == "اتفل" and ww then
+if sudoname(ww) then return "📌 ما اكدر اتفل عليه مستحيل 🕵🏻" end
+if msg.reply_id then
+tdcli.sendMessage(msg.to.id, msg.id, 1, 'اوك سيدي 🌝🍃', 1, 'html')
+tdcli.sendMessage(msg.to.id, msg.reply_id, 1, 'ختفوووووووووو💦💦️️', 1, 'html')
+else 
+return"  🕵🏻 وينه بله سويله رد 🙄"
+end
+elseif w == ""..bot_name.." رزله" and ww and is_sudo(msg) then
+if msg.reply_id then
+tdcli.sendMessage(msg.to.id, msg.id, 1, 'اوك سيدي 🌝🍃', 1, 'html')
+tdcli.sendMessage(msg.to.id, msg.reply_id, 1, 'يا ول شو طالعة عينك😒 من البنات مو😪و هم صايرلك لسان تحجي😠اشو تعال👋👊صير حباب مرة ثانية ترةة ...😉و لا تخليني البسك عمامة و اتفل عليك😂️', 1, 'html')
 end
 elseif w == "بوس" and ww then 
-if msg.reply_id then
-send_msg(msg.to.id, bs[math.random(#bs)] , msg.reply_id ,'html')  
+if sudoname(ww) then
+return " امممح عـﮩـموري┇🎵™ هذا العشق😻💋"
 else
-send_msg(msg.to.id, "📌 وينه بله سويله رد 🕵🏻", nil ,'html')
+if msg.reply_id then
+return  bs[math.random(#bs)] 
+else
+return "📌 وينه بله سويله رد 🕵🏻"
+end
 end
 elseif w == "تحب" and ww then
+if sudoname(ww) then
+return "اموت عليةة عـﮩـموري┇🎵™ هذا العشق😻💋"
+else
 return  thb[math.random(#thb)] 
+end
 elseif is_sudo(msg) and w =="هلو" then
 return  sh[math.random(#sh)]  
 elseif not is_sudo(msg) and w =="هلو" then
@@ -258,6 +415,8 @@ elseif not is_sudo(msg) and w == "احبك" or w=="حبك" then
 return  lovm[math.random(#lovm)]  
 elseif not is_sudo(msg) and w == "تحبني" then
 return  lovm[math.random(#lovm)]  
+elseif w== "ڤير"  then
+return  ss97[math.random(#ss97)]  
 elseif w== "غني" or w=="غنيلي" then
 return  song[math.random(#song)] 
 elseif w=="اتفل" or w=="تفل" then
@@ -297,7 +456,7 @@ return  "ديله شلون اطيق خلقتك اني😾🖖🏿🕷"
 elseif w== "اريد اكبل"  then
 return  "خخ اني هم اريد اكبل قابل ربي وحد😹🙌️"
 elseif w== "باي" or w=="بااي" or w=="باااي" or w=="بااااي" then
-return  "بايات حياتي ❤️ " ..name_user.."\n"
+return  "بايات حياتي ❤️ " ..msg.from.first_name.."\n"
 elseif w== "ضوجه"  then
 return  "شي اكيد الكبل ماكو 😂 لو بعدك/ج مازاحف/ة 🙊😋"
 elseif w== "اروح اصلي"  then
@@ -306,6 +465,10 @@ elseif w== "صاك"  then
 return  "زاحفه 😂 منو هذا دزيلي صورهه"
 elseif w== "اجيت" or w=="اني اجيت" then
 return  "كْـٌﮩٌﮧٌ﴿😍﴾ـﮩٌول الـ୭ـهـٌ୭ـْلا❤️"
+elseif w== "طفي السبلت"  then
+return  "تم اطفاء السبلت بنجاح 🌚🍃"
+elseif w== "شغل السبلت"  then
+return  "تم تشغيل السبلت بنجاح بردتو مبردتو معليه  🌚🍃"
 elseif w== "حفلش"  then
 return  "افلش راسك 🤓"
 elseif w=="نايمين" then
@@ -336,7 +499,7 @@ elseif w== "معليك" or w== "شعليك" then
 return  "عليه ونص 😡"
 elseif w== "شدسون" or w== "شداتسوون" or w== "شدتسون" then
 return  "نطبخ 😐"
-elseif w== botname.." شلونك"  then
+elseif w== bot_name and ww=="شلونك"  then
 return "احســن مــن انتهــــہ شــلونـــك شــخــبـارك يـــول مۂــــشتـــاقـــلك شــو ماكـــو 😹🌚"
 elseif w== "يومه فدوه"  then
 return  "فدؤه الج حياتي 😍😙"
@@ -377,7 +540,7 @@ return  "اخليك بزاويه 380 درجه وانته تعرف الباقي �
 elseif w== "فديتك" or w== "فديتنك"  then
 return  "فداكـ/چ ثولان العالـم😍😂" 
 elseif w== "بوت"  then
-return  " أسمي "..botname.." 🌚🌸"
+return  "أسمي "..bot_name.." 🌚🌸"
 elseif w== "مساعدة"  then
 return  "لعرض قائمة المساعدة اكتب الاوامر 🌚❤️"
 elseif w== "زاحف"  then
@@ -400,6 +563,8 @@ elseif w== "واو"  then
 return  "قميل 🌝🌿"
 elseif w== "زاحفه" or w== "زاحفة"  then
 return  "لو زاحفتلك جان ماكلت زاحفه 🌝🌸"
+elseif w== "حبيبي" or w=="حبي"  then
+return  "بعد روحي 😍❤️ تفضل"
 elseif w== "حبيبتي"  then
 return  "تحبك وتحب عليك 🌝🌷"
 elseif w== "حياتي"  then
@@ -426,14 +591,17 @@ elseif w== "😉"  then
 return  "😻🙈"
 elseif w== "اقرالي دعاء"  then
 return "اللهم عذب المدرسين 😢 منهم الاحياء والاموات 😭🔥 اللهم عذب ام الانكليزي 😭💔 وكهربها بلتيار الرئيسي 😇 اللهم عذب ام الرياضيات وحولها الى غساله بطانيات 🙊 اللهم عذب ام الاسلاميه واجعلها بائعة الشاميه 😭🍃 اللهم عذب ام العربي وحولها الى بائعه البلبي اللهم عذب ام الجغرافيه واجعلها كلدجاجه الحافية اللهم عذب ام التاريخ وزحلقها بقشره من البطيخ وارسلها الى المريخ اللهم عذب ام الاحياء واجعلها كل مومياء اللهم عذب المعاون اقتله بلمدرسه بهاون 😂😂😂"
-elseif edited_message and settings.lock_edit =="no" and not is_owner(msg) then
+elseif msg.edited and not is_sudo(msg) and settings.lock_edit =="🚫" then
 return "سحك وعدل 😹☝🏿"
 -------------- صوتيات
-elseif w==botname and ww == "عفط" and r3 and msg.reply_id and is_sudo(msg) then
+elseif w == ""..bot_name.." عفط" and ww and msg.reply_id and is_sudo(msg) then
 if msg.reply_id then
-sendVoice(msg.to.id, 'data/zeg.ogg', msg.reply_id, '💢اسمع الزيج  اسمع 🔊')
+return tdcli.sendVoice(msg.chat_id_, msg.reply_id, 0, 1, nil, 'data/audio/zeg.ogg', nil, nil, '💢اسمع الزيج  اسمع 🔊')
 end
-
+elseif w == ""..bot_name.." بوس" and ww and msg.reply_id and is_sudo(msg) then
+if msg.reply_id then
+return tdcli.sendAnimation(msg.to.id, msg.reply_id, 0, 1, nil, "data/photo/bos.mp4", nil, nil, 'مح 💋')  
+end
 ---------------------------------------------
 elseif w == "انجب" or w == "نجب" or w=="جب" then
 if is_sudo(msg) then 
@@ -446,41 +614,36 @@ else
 return   "انجب انته لاتندفر 😏"
 end
 elseif  data[tostring(msg.to.id)]['replay'] and data[tostring(msg.to.id)]['replay'][w] then
-return  data[tostring(msg.to.id)]['replay'][w] 
-
+return  check_markdown(data[tostring(msg.to.id)]['replay'][w] )
+elseif data['replay_all'] and data['replay_all'][w] then
+return check_markdown(data['replay_all'][w])
 end
 end 
 else
 return
 end
 ---------------------------------------------
-    
+
 ---------------------------------------------
 
 end
 return {
 patterns = {
-"^(.*) (عفط)(.*)$", 
-"^(.*) (رزله)(.*)$", 
+"^("..bot_name.." عفط)(.*)$", 
+"^("..bot_name.." اتفل)(.*)$", 
+"^("..bot_name.." رزله)(.*)$", 
+"^("..bot_name.." بوس)(.*)$", 
+"^(بوس)(.*)$", 
 "^(تحب) (.*)$",
 "^(كله) (.*)$",
 "^(كول) (.*)$",
 "^(بوس) (.*)$", 
-"^(رد) (اضف) ([^%s]+) (.+)$",
-"^(رد) (مسح الكل)$",
-"^(رد) (مسح) (.*)$",
+"^(مسح رد عام) (.*)$",
+"^(مسح رد) (.*)$",
 "(.*)" 
 },
 run = run,
 }
 end
---[[
-by omar alsaray @blcon  \ @verxbot
-اي استفسار او لديك مشكله تابع قناتي @verxbot 
-او مراسلتي ع الخاص
-تم تعريب االترمنال من قبل عمر السراي
-ملف الردود + اضافه الرد
-من برمجتي وكتابتي
-]]
 -- write by Dev Alsaray
 -- tele : @alsaray
